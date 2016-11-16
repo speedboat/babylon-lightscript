@@ -1,17 +1,29 @@
 {
-  "presets": [
-    ["es2015", {
-      "loose": true,
-      "modules": false
-    }],
-    "stage-0"
-  ],
   "plugins": [
     "transform-flow-strip-types"
   ],
   "env": {
     "test": {
+      "presets": [
+        ["env", {
+          "targets": {
+            "node": "current"
+          },
+          "loose": true,
+          "modules": false
+        }],
+        "stage-0"
+      ],
       "plugins": ["istanbul"]
+    },
+    "production": {
+      "presets": [
+        ["env", {
+          "loose": true,
+          "modules": false
+        }],
+        "stage-0"
+      ]
     }
   }
 }
