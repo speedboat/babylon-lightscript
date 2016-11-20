@@ -68,7 +68,80 @@ pp.isTypedColonConst = function (decl) {
   );
 };
 
+// copy/paste from parseForIn, minus the forAwait and parenR expectation
+// TODO: consider handling forAwait
+
+pp.parseParenFreeForIn = function (node, init) {
+  let type = this.match(tt._in) ? "ForInStatement" : "ForOfStatement";
+  this.next();
+  node.left = init;
+  node.right = this.parseExpression();
+  // does not expect paren
+  node.body = this.parseStatement(false);
+  this.state.labels.pop();
+  return this.finishNode(node, type);
+};
+
 export default function (instance) {
+
+  // if, switch, while, with --> don't need no stinkin' parens no more
+  // (do-while still needs them)
+
+  instance.extend("parseParenExpression", function (inner) {
+    return function () {
+      if (this.match(tt.parenL)) return inner.apply(this, arguments);
+
+      let val = this.parseExpression();
+
+      // enforce brace, so you can't do `if true return`
+      // TODO: reconsider restriction
+      // TODO: consider bailing to native impl
+      if (!this.match(tt.braceL)) {
+        this.unexpected(
+          this.state.pos,
+          "Paren-free test expressions must be followed by braces. " +
+          "Consider wrapping your condition in parens."
+        );
+      }
+
+      return val;
+    };
+  });
+
+  // allow paren-free for-in/for-of
+  // (ultimately, it will probably be cleaner to completely replace main impl, disallow parens)
+
+  instance.extend("parseForStatement", function (inner) {
+    return function (node) {
+      let state = this.state.clone();
+      this.next();
+
+      // `for` `(` or `for` `await`
+      // TODO: consider implementing paren-free for-await-of
+      if (this.match(tt.parenL) || (
+        this.hasPlugin("asyncGenerators") && this.isContextual("await")
+      )) {
+        this.state = state;
+        return inner.apply(this, arguments);
+      }
+
+      // copypasta from original parseForStatement
+      this.state.labels.push({kind: "loop"});
+      if (this.match(tt._var) || this.match(tt._let) || this.match(tt._const)) {
+        let init = this.startNode(), varKind = this.state.type;
+        this.next();
+        this.parseVar(init, true, varKind);
+        this.finishNode(init, "VariableDeclaration");
+
+        if (this.match(tt._in) || this.isContextual("of")) {
+          if (init.declarations.length === 1 && !init.declarations[0].init) {
+            return this.parseParenFreeForIn(node, init);
+          }
+        }
+      }
+      this.unexpected();
+    };
+  });
 
   // if exporting an implicit-const, don't parse as default.
 
