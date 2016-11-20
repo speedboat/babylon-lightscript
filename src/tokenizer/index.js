@@ -420,6 +420,8 @@ export default class Tokenizer {
       case 58:
         if (this.hasPlugin("functionBind") && this.input.charCodeAt(this.state.pos + 1) === 58) {
           return this.finishOp(tt.doubleColon, 2);
+        } else if (this.hasPlugin("lightscript") && this.input.charCodeAt(this.state.pos + 1) === 61) {
+          return this.finishOp(tt.colonEq, 2);
         } else {
           ++this.state.pos;
           return this.finishToken(tt.colon);

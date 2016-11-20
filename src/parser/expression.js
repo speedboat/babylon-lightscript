@@ -108,12 +108,34 @@ pp.parseMaybeAssign = function (noIn, refShorthandDefaultPos, afterLeftParse, re
     this.state.potentialArrowAt = this.state.start;
   }
 
+  let leftStartsLine = this.isLineBreak();  // for lightscript
   let left = this.parseMaybeConditional(noIn, refShorthandDefaultPos, refNeedsArrowPos);
   if (afterLeftParse) left = afterLeftParse.call(this, left, startPos, startLoc);
+
+  // `varName: type = val`, with unwinding
+  let typeAnnotation;
+  if (this.hasPlugin("lightscript") && this.hasPlugin("flow") && leftStartsLine && this.match(tt.colon)) {
+    let state = this.state.clone();
+    try {
+      typeAnnotation = this.flowParseTypeAnnotation();
+    } catch (err) {
+      this.state = state;
+    }
+
+    // if it's not followed by `=` after all, unwind
+    if (!(this.match(tt.eq) || this.match(tt.colonEq))) {
+      this.state = state;
+    }
+  }
+
   if (this.state.type.isAssign) {
     const node = this.startNodeAt(startPos, startLoc);
     node.operator = this.state.value;
-    node.left = this.match(tt.eq) ? this.toAssignable(left, undefined, "assignment expression") : left;
+
+    let isColonEq = this.hasPlugin("lightscript") && this.match(tt.colonEq);
+    if (isColonEq && !leftStartsLine) this.unexpected(startPos, "':=' assignment must occur at the beginning of a line.");
+
+    node.left = this.match(tt.eq) || isColonEq ? this.toAssignable(left, undefined, "assignment expression") : left;
     refShorthandDefaultPos.start = 0; // reset because shorthand default was used correctly
 
     this.checkLVal(left, undefined, undefined, "assignment expression");
@@ -128,6 +150,12 @@ pp.parseMaybeAssign = function (noIn, refShorthandDefaultPos, afterLeftParse, re
       if (errorMsg) {
         this.raise(left.start, `You're trying to assign to a parenthesized expression, eg. instead of ${errorMsg}`);
       }
+    }
+
+    if (typeAnnotation) {
+      node.left.typeAnnotation = typeAnnotation;
+      node.left.end = typeAnnotation.end;
+      node.left.loc.end = typeAnnotation.loc.end;
     }
 
     this.next();
