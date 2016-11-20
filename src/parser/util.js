@@ -49,12 +49,23 @@ pp.expectContextual = function (name, message) {
   if (!this.eatContextual(name)) this.unexpected(null, message);
 };
 
+// added for lightscript
+
+pp.isLineBreak = function () {
+  if (this.hasPlugin("lightscript")) {
+    // treat start-of-file as newline.
+    // TODO: reconsider/reevaluate
+    if (!this.state.lastTokEnd) return true;
+  }
+  return lineBreak.test(this.input.slice(this.state.lastTokEnd, this.state.start));
+};
+
 // Test whether a semicolon can be inserted at the current position.
 
 pp.canInsertSemicolon = function () {
   return this.match(tt.eof) ||
     this.match(tt.braceR) ||
-    lineBreak.test(this.input.slice(this.state.lastTokEnd, this.state.start));
+    this.isLineBreak();
 };
 
 // TODO

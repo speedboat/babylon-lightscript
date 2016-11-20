@@ -11,8 +11,10 @@ import { types as tokTypes } from "./tokenizer/types";
 import "./tokenizer";
 import "./tokenizer/context";
 
+import lightscriptPlugin from "./plugins/lightscript";
 import flowPlugin from "./plugins/flow";
 import jsxPlugin from "./plugins/jsx";
+plugins.lightscript = lightscriptPlugin;
 plugins.flow = flowPlugin;
 plugins.jsx = jsxPlugin;
 

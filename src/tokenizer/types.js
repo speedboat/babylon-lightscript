@@ -81,6 +81,7 @@ export const types = {
   // in AssignmentExpression nodes.
 
   eq: new TokenType("=", {beforeExpr: true, isAssign: true}),
+  colonEq: new TokenType(":=", {beforeExpr: true, isAssign: true}),
   assign: new TokenType("_=", {beforeExpr: true, isAssign: true}),
   incDec: new TokenType("++/--", {prefix: true, postfix: true, startsExpr: true}),
   prefix: new TokenType("prefix", {beforeExpr: true, prefix: true, startsExpr: true}),

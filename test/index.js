@@ -6,8 +6,10 @@ var _           = require("lodash");
 var fixtures = getFixtures(__dirname + "/fixtures");
 
 _.each(fixtures, function (suites, name) {
+  // if (name.indexOf('lightscript') < 0) return
   _.each(suites, function (testSuite) {
     _.each(testSuite.tests, function (task) {
+      // if (testSuite.title.indexOf('typed') < 0) return
       test(name + "/" + testSuite.title + "/" + task.title, !task.disabled && function () {
         try {
           return runTest(task);
@@ -28,6 +30,8 @@ function save(test, ast) {
 
 function runTest(test) {
   var opts = test.options;
+  // opts.plugins = opts.plugins || []
+  // opts.plugins.push("lightscript")
   opts.locations = true;
   opts.ranges = true;
 
@@ -56,7 +60,7 @@ function runTest(test) {
   } else {
     var mis = misMatch(JSON.parse(test.expect.code), ast);
     if (mis) {
-      //save(test, ast);
+      // save(test, ast);
       throw new Error(mis);
     }
   }
