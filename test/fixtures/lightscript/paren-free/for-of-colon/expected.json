@@ -43,9 +43,9 @@
           }
         },
         "left": {
-          "type": "Identifier",
+          "type": "ObjectPattern",
           "start": 4,
-          "end": 5,
+          "end": 7,
           "loc": {
             "start": {
               "line": 1,
@@ -53,100 +53,130 @@
             },
             "end": {
               "line": 1,
-              "column": 5
-            },
-            "identifierName": "x"
-          },
-          "name": "x"
-        },
-        "right": {
-          "type": "ObjectExpression",
-          "start": 9,
-          "end": 15,
-          "loc": {
-            "start": {
-              "line": 1,
-              "column": 9
-            },
-            "end": {
-              "line": 1,
-              "column": 15
+              "column": 7
             }
           },
           "properties": [
             {
               "type": "ObjectProperty",
-              "start": 10,
-              "end": 14,
+              "start": 5,
+              "end": 6,
               "loc": {
                 "start": {
                   "line": 1,
-                  "column": 10
+                  "column": 5
                 },
                 "end": {
                   "line": 1,
-                  "column": 14
+                  "column": 6
                 }
               },
               "method": false,
-              "shorthand": false,
+              "shorthand": true,
               "computed": false,
               "key": {
                 "type": "Identifier",
-                "start": 10,
-                "end": 11,
+                "start": 5,
+                "end": 6,
                 "loc": {
                   "start": {
                     "line": 1,
-                    "column": 10
+                    "column": 5
                   },
                   "end": {
                     "line": 1,
-                    "column": 11
+                    "column": 6
                   },
-                  "identifierName": "a"
+                  "identifierName": "x"
                 },
-                "name": "a"
+                "name": "x"
               },
               "value": {
-                "type": "NumericLiteral",
-                "start": 13,
-                "end": 14,
+                "type": "Identifier",
+                "start": 5,
+                "end": 6,
                 "loc": {
                   "start": {
                     "line": 1,
-                    "column": 13
+                    "column": 5
                   },
                   "end": {
                     "line": 1,
-                    "column": 14
-                  }
+                    "column": 6
+                  },
+                  "identifierName": "x"
                 },
-                "extra": {
-                  "rawValue": 1,
-                  "raw": "1"
-                },
-                "value": 1
+                "name": "x"
+              },
+              "extra": {
+                "shorthand": true
               }
             }
           ]
         },
+        "right": {
+          "type": "ArrayExpression",
+          "start": 11,
+          "end": 13,
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 11
+            },
+            "end": {
+              "line": 1,
+              "column": 13
+            }
+          },
+          "elements": []
+        },
         "body": {
-          "type": "BlockStatement",
-          "start": 16,
+          "type": "ExpressionStatement",
+          "start": 15,
           "end": 18,
           "loc": {
             "start": {
               "line": 1,
-              "column": 16
+              "column": 15
             },
             "end": {
               "line": 1,
               "column": 18
             }
           },
-          "body": [],
-          "directives": []
+          "expression": {
+            "type": "CallExpression",
+            "start": 15,
+            "end": 18,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 15
+              },
+              "end": {
+                "line": 1,
+                "column": 18
+              }
+            },
+            "callee": {
+              "type": "Identifier",
+              "start": 15,
+              "end": 16,
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 15
+                },
+                "end": {
+                  "line": 1,
+                  "column": 16
+                },
+                "identifierName": "x"
+              },
+              "name": "x"
+            },
+            "arguments": []
+          }
         }
       }
     ],

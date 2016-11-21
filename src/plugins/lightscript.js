@@ -3,7 +3,6 @@ import { types as tt } from "../tokenizer/types";
 
 let pp = Parser.prototype;
 
-
 // mostly a simplified dup of parseVar and parseVarStatement
 
 pp.parseColonEq = function(node, decl, isFor) {
@@ -37,7 +36,7 @@ pp.rewriteAssignmentAsDeclarator = function (node) {
 // Must unwind state after calling this!
 // TODO: remove completely, and replace with a non-lookahead solution for perf.
 
-pp.maybeParseColonConstId = function () {
+pp.maybeParseColonConstId = function (isForOf) {
   if (!this.isPossibleColonConst()) return null;
 
   let id = this.startNode();
@@ -47,7 +46,13 @@ pp.maybeParseColonConstId = function () {
     return null;
   }
 
-  if (!(this.eat(tt.colonEq) || this.isTypedColonConst(id))) return null;
+  // if for-of, require, but do not eat, `of`
+  // else, require and eat `:=` or `: Type =`
+  if (isForOf) {
+    if (!this.isContextual("of")) return null;
+  } else if (!(this.eat(tt.colonEq) || this.isTypedColonConst(id))) {
+    return null;
+  }
 
   return id;
 };
@@ -68,78 +73,95 @@ pp.isTypedColonConst = function (decl) {
   );
 };
 
-// copy/paste from parseForIn, minus the forAwait and parenR expectation
-// TODO: consider handling forAwait
+pp.parseForFrom = function (node, iterator) {
+  this.expectContextual("from");
+  // `for i from`
+  let arrayOrRangeStart = this.parseExpression(true);
+  if (this.match(tt._thru) || this.match(tt._til)) {
+    return this.parseForFromRange(node, iterator, arrayOrRangeStart);
+  } else {
+    return this.parseForFromArray(node, iterator, null, arrayOrRangeStart);
+  }
+};
 
-pp.parseParenFreeForIn = function (node, init) {
-  let type = this.match(tt._in) ? "ForInStatement" : "ForOfStatement";
-  this.next();
-  node.left = init;
-  node.right = this.parseExpression();
-  // does not expect paren
+pp.parseForFromArray = function (node, iterator, element = null, array = null) {
+  if (iterator.type !== "Identifier") this.unexpected(iterator.start);
+  if (element && element.type !== "Identifier") this.unexpected(element.start);
+  node.id = iterator;
+  node.elem = element;
+
+  if (array) {
+    node.array = array;
+  } else {
+    this.expectContextual("from");
+    node.array = this.parseMaybeAssign(true);
+  }
+
+  this.expectParenFreeBlockStart();
   node.body = this.parseStatement(false);
-  this.state.labels.pop();
-  return this.finishNode(node, type);
+  return this.finishNode(node, "ForFromArrayStatement");
+};
+
+pp.parseForFromRange = function (node, iterator = null, rangeStart = null) {
+  if (iterator && iterator.type === "SequenceExpression") {
+    this.unexpected(iterator.expressions[1].start, "Ranges only iterate over one variable.");
+  }
+  node.id = iterator;
+
+  if (rangeStart) {
+    // `for 0 til`
+    if (rangeStart.type === "SequenceExpression") {
+      this.unexpected(rangeStart.expressions[1].start, "Unexpected comma.");
+    }
+    node.rangeStart = rangeStart;
+  } else {
+    // `for i from 0 til`
+    this.expectContextual("from");
+    node.rangeStart = this.parseMaybeAssign(true);
+  }
+
+  if (this.eat(tt._thru)) {
+    node.inclusive = true;
+  } else {
+    this.expect(tt._til);
+    node.inclusive = false;
+  }
+
+  node.rangeEnd = this.parseMaybeAssign(true);
+  this.expectParenFreeBlockStart();
+  node.body = this.parseStatement(false);
+  return this.finishNode(node, "ForFromRangeStatement");
+};
+
+pp.expectParenFreeBlockStart = function () {
+  // if true: blah
+  // if true { blah }
+  // if (true) blah
+  // TODO: ensure matching parens, not just allowing one on either side
+  if (!(this.eat(tt.colon) && !this.isLineBreak() || this.match(tt.braceL) || this.eat(tt.parenR))) {
+    this.unexpected(null, "Paren-free test expressions must be followed by braces or a colon.");
+  }
+};
+
+// [for ...: stmnt]
+
+pp.parseArrayComprehension = function (node) {
+  let loop = this.startNode();
+  node.loop = this.parseForStatement(loop);
+  this.expect(tt.bracketR);
+  return this.finishNode(node, "ArrayComprehension");
 };
 
 export default function (instance) {
 
   // if, switch, while, with --> don't need no stinkin' parens no more
-  // (do-while still needs them)
 
   instance.extend("parseParenExpression", function (inner) {
     return function () {
       if (this.match(tt.parenL)) return inner.apply(this, arguments);
-
       let val = this.parseExpression();
-
-      // enforce brace, so you can't do `if true return`
-      // TODO: reconsider restriction
-      // TODO: consider bailing to native impl
-      if (!this.match(tt.braceL)) {
-        this.unexpected(
-          this.state.pos,
-          "Paren-free test expressions must be followed by braces. " +
-          "Consider wrapping your condition in parens."
-        );
-      }
-
+      this.expectParenFreeBlockStart();
       return val;
-    };
-  });
-
-  // allow paren-free for-in/for-of
-  // (ultimately, it will probably be cleaner to completely replace main impl, disallow parens)
-
-  instance.extend("parseForStatement", function (inner) {
-    return function (node) {
-      let state = this.state.clone();
-      this.next();
-
-      // `for` `(` or `for` `await`
-      // TODO: consider implementing paren-free for-await-of
-      if (this.match(tt.parenL) || (
-        this.hasPlugin("asyncGenerators") && this.isContextual("await")
-      )) {
-        this.state = state;
-        return inner.apply(this, arguments);
-      }
-
-      // copypasta from original parseForStatement
-      this.state.labels.push({kind: "loop"});
-      if (this.match(tt._var) || this.match(tt._let) || this.match(tt._const)) {
-        let init = this.startNode(), varKind = this.state.type;
-        this.next();
-        this.parseVar(init, true, varKind);
-        this.finishNode(init, "VariableDeclaration");
-
-        if (this.match(tt._in) || this.isContextual("of")) {
-          if (init.declarations.length === 1 && !init.declarations[0].init) {
-            return this.parseParenFreeForIn(node, init);
-          }
-        }
-      }
-      this.unexpected();
     };
   });
 

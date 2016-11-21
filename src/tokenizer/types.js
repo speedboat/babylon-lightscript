@@ -117,6 +117,10 @@ export const types = {
 };
 
 export const keywords = {
+  // LightScript
+  "til": new KeywordTokenType("til", { beforeExpr }),
+  "thru": new KeywordTokenType("thru", { beforeExpr }),
+
   "break": new KeywordTokenType("break"),
   "case": new KeywordTokenType("case", { beforeExpr }),
   "catch": new KeywordTokenType("catch"),

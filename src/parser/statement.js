@@ -227,8 +227,25 @@ pp.parseDoStatement = function (node) {
   node.body = this.parseStatement(false);
   this.state.labels.pop();
   this.expect(tt._while);
-  node.test = this.parseParenExpression();
-  this.eat(tt.semi);
+
+  // do-while can't use the lightscript-defined parseParenExpression
+  // b/c it expects a trailing colon or brace, which you don't have here.
+
+  if (this.hasPlugin("lightscript")) {
+    // allow parens; if not used, enforce semicolon or newline.
+    if (this.eat(tt.parenL)) {
+      node.test = this.parseExpression();
+      this.expect(tt.parenR);
+      this.eat(tt.semi);
+    } else {
+      node.test = this.parseExpression();
+      this.semicolon();
+    }
+  } else {
+    node.test = this.parseParenExpression();
+    this.eat(tt.semi);
+  }
+
   return this.finishNode(node, "DoWhileStatement");
 };
 
@@ -249,7 +266,13 @@ pp.parseForStatement = function (node) {
     forAwait = true;
     this.next();
   }
-  this.expect(tt.parenL);
+
+  if (this.hasPlugin("lightscript")) {
+    // TODO: check that closing paren is/isnt there to match
+    this.eat(tt.parenL);
+  } else {
+    this.expect(tt.parenL);
+  }
 
   if (this.match(tt.semi)) {
     if (forAwait) {
@@ -283,6 +306,22 @@ pp.parseForStatement = function (node) {
     this.toAssignable(init, undefined, description);
     this.checkLVal(init, undefined, undefined, description);
     return this.parseForIn(node, init, forAwait);
+  } else if (this.hasPlugin("lightscript") && this.isContextual("from")) {
+    if (forAwait) this.unexpected();
+
+    if (init.type === "SequenceExpression") {
+      // `for i, x from`
+      if (init.expressions.length > 2) this.unexpected(init.expressions[2].start);
+      return this.parseForFromArray(node, init.expressions[0], init.expressions[1]);
+    } else {
+      // `for i from`
+      this.toAssignable(init, undefined, "for-from statement");
+      this.checkLVal(init, undefined, undefined, "for-from statement");
+      return this.parseForFrom(node, init);
+    }
+  } else if (this.hasPlugin("lightscript") && this.match(tt._til)) {
+    // `for 0 til`
+    return this.parseForFromRange(node, null, init);
   } else if (refShorthandDefaultPos.start) {
     this.unexpected(refShorthandDefaultPos.start);
   }
@@ -465,7 +504,13 @@ pp.parseLabeledStatement = function (node, maybeName, expr) {
 
 pp.parseExpressionStatement = function (node, expr) {
   node.expression = expr;
-  this.semicolon();
+  if (this.hasPlugin("lightscript")) {
+    // for array comprehensions.
+    // TODO: cleanup / think of a better way of doing this.
+    this.match(tt.bracketR) || this.match(tt._else) || this.match(tt._elif) || this.semicolon();
+  } else {
+    this.semicolon();
+  }
   return this.finishNode(node, "ExpressionStatement");
 };
 
@@ -536,7 +581,13 @@ pp.parseFor = function (node, init) {
   node.test = this.match(tt.semi) ? null : this.parseExpression();
   this.expect(tt.semi);
   node.update = this.match(tt.parenR) ? null : this.parseExpression();
-  this.expect(tt.parenR);
+
+  if (this.hasPlugin("lightscript")) {
+    this.expectParenFreeBlockStart();
+  } else {
+    this.expect(tt.parenR);
+  }
+
   node.body = this.parseStatement(false);
   this.state.labels.pop();
   return this.finishNode(node, "ForStatement");
@@ -556,7 +607,13 @@ pp.parseForIn = function (node, init, forAwait) {
   }
   node.left = init;
   node.right = this.parseExpression();
-  this.expect(tt.parenR);
+
+  if (this.hasPlugin("lightscript")) {
+    this.expectParenFreeBlockStart();
+  } else {
+    this.expect(tt.parenR);
+  }
+
   node.body = this.parseStatement(false);
   this.state.labels.pop();
   return this.finishNode(node, type);

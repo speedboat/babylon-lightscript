@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 18,
+  "end": 16,
   "loc": {
     "start": {
       "line": 1,
@@ -9,13 +9,13 @@
     },
     "end": {
       "line": 1,
-      "column": 18
+      "column": 16
     }
   },
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 18,
+    "end": 16,
     "loc": {
       "start": {
         "line": 1,
@@ -23,7 +23,7 @@
       },
       "end": {
         "line": 1,
-        "column": 18
+        "column": 16
       }
     },
     "sourceType": "script",
@@ -31,7 +31,7 @@
       {
         "type": "ForInStatement",
         "start": 0,
-        "end": 18,
+        "end": 16,
         "loc": {
           "start": {
             "line": 1,
@@ -39,7 +39,7 @@
           },
           "end": {
             "line": 1,
-            "column": 18
+            "column": 16
           }
         },
         "left": {
@@ -55,14 +55,14 @@
               "line": 1,
               "column": 5
             },
-            "identifierName": "x"
+            "identifierName": "i"
           },
-          "name": "x"
+          "name": "i"
         },
         "right": {
           "type": "ArrayExpression",
           "start": 9,
-          "end": 15,
+          "end": 11,
           "loc": {
             "start": {
               "line": 1,
@@ -70,32 +70,41 @@
             },
             "end": {
               "line": 1,
-              "column": 15
+              "column": 11
             }
           },
-          "elements": [
-            {
-              "type": "NumericLiteral",
-              "start": 10,
-              "end": 11,
-              "loc": {
-                "start": {
-                  "line": 1,
-                  "column": 10
-                },
-                "end": {
-                  "line": 1,
-                  "column": 11
-                }
-              },
-              "extra": {
-                "rawValue": 1,
-                "raw": "1"
-              },
-              "value": 1
+          "elements": []
+        },
+        "body": {
+          "type": "ExpressionStatement",
+          "start": 13,
+          "end": 16,
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 13
             },
-            {
-              "type": "NumericLiteral",
+            "end": {
+              "line": 1,
+              "column": 16
+            }
+          },
+          "expression": {
+            "type": "CallExpression",
+            "start": 13,
+            "end": 16,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 13
+              },
+              "end": {
+                "line": 1,
+                "column": 16
+              }
+            },
+            "callee": {
+              "type": "Identifier",
               "start": 13,
               "end": 14,
               "loc": {
@@ -106,32 +115,13 @@
                 "end": {
                   "line": 1,
                   "column": 14
-                }
+                },
+                "identifierName": "x"
               },
-              "extra": {
-                "rawValue": 2,
-                "raw": "2"
-              },
-              "value": 2
-            }
-          ]
-        },
-        "body": {
-          "type": "BlockStatement",
-          "start": 16,
-          "end": 18,
-          "loc": {
-            "start": {
-              "line": 1,
-              "column": 16
+              "name": "x"
             },
-            "end": {
-              "line": 1,
-              "column": 18
-            }
-          },
-          "body": [],
-          "directives": []
+            "arguments": []
+          }
         }
       }
     ],

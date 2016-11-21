@@ -512,6 +512,9 @@ pp.parseExprAtom = function (refShorthandDefaultPos) {
     case tt.bracketL:
       node = this.startNode();
       this.next();
+      if (this.hasPlugin("lightscript") && this.match(tt._for)) {
+        return this.parseArrayComprehension(node);
+      }
       node.elements = this.parseExprList(tt.bracketR, true, refShorthandDefaultPos);
       this.toReferencedList(node.elements);
       return this.finishNode(node, "ArrayExpression");
