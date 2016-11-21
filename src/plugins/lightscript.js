@@ -82,6 +82,67 @@ pp.parseParenFreeForIn = function (node, init) {
   return this.finishNode(node, type);
 };
 
+// largely copypasta, look for opening brace instead of closing paren
+
+pp.parseParenFreeFor = function (node, init) {
+  node.init = init;
+  this.expect(tt.semi);
+  node.test = this.match(tt.semi) ? null : this.parseExpression();
+  this.expect(tt.semi);
+  node.update = this.match(tt.parenR) ? null : this.parseExpression();
+  if (!this.match(tt.braceL)) this.unexpected();
+  node.body = this.parseStatement(false);
+  this.state.labels.pop();
+  return this.finishNode(node, "ForStatement");
+};
+
+// for i from 0 til 10
+// for 0 til 10
+// for i from array
+// for i, val from array
+
+pp.parseForFrom = function (node, init) {
+  // (only identifiers for now, no destructuring)
+  // will need to construct into VariableDeclaration in babel plugin
+  if (this.eat(tt.comma)) {
+    node.elem = this.parseIdentifier();
+  }
+
+  if (this.isContextual("from")) {
+    node.id = init;
+    this.next();
+
+    let arrayOrRangeStart = this.parseExpression(true);
+    if (this.eat(tt._til)) {
+      if (node.elem) this.unexpected(node.elem.start, "Cannot use elem with ranges");
+
+      node.rangeStart = arrayOrRangeStart;
+      node.rangeEnd = this.parseExpression(true);
+    } else {
+      if (init.type !== "Identifier") this.unexpected();
+
+      node.array = arrayOrRangeStart;
+    }
+  } else {
+    // for 0 til 10
+    this.expect(tt._til);
+
+    if (node.elem) this.unexpected(node.elem.start, "Cannot use elem with ranges");
+    if (init.type === "SequenceExpression") {
+      this.unexpected(init.expressions[0].end + 1, "Cannot use elem with ranges");
+    }
+
+    node.rangeStart = init;
+    node.rangeEnd = this.parseExpression(true);
+  }
+
+  if (!this.match(tt.braceL)) this.unexpected();
+  node.body = this.parseStatement(false);
+
+  this.state.labels.pop();
+  return this.finishNode(node, "ForFromStatement");
+};
+
 export default function (instance) {
 
   // if, switch, while, with --> don't need no stinkin' parens no more
@@ -113,6 +174,7 @@ export default function (instance) {
 
   instance.extend("parseForStatement", function (inner) {
     return function (node) {
+      // TODO: just get rid of native impl, require paren-free...
       let state = this.state.clone();
       this.next();
 
@@ -125,21 +187,72 @@ export default function (instance) {
         return inner.apply(this, arguments);
       }
 
-      // copypasta from original parseForStatement
+      // for i of x
+      // for i in x
+      // for let i of x
+      // for i from x
+      // for i, x from y
+      // for 0 til 10
+      // for i from 0 til 10
+      // for let i = 0; i < len; i++
+
+      // ...was copypasta from original parseForStatement
       this.state.labels.push({kind: "loop"});
+
+      if (this.match(tt.semi)) {
+        return this.parseParenFreeFor(node, null);
+      }
+
+      let init;
       if (this.match(tt._var) || this.match(tt._let) || this.match(tt._const)) {
-        let init = this.startNode(), varKind = this.state.type;
+        let varKind = this.state.type;
+        init = this.startNode();
         this.next();
         this.parseVar(init, true, varKind);
         this.finishNode(init, "VariableDeclaration");
+      } else if (this.isPossibleImplicitConst()) {
+        let { type, value } = this.lookahead();
 
-        if (this.match(tt._in) || this.isContextual("of")) {
-          if (init.declarations.length === 1 && !init.declarations[0].init) {
-            return this.parseParenFreeForIn(node, init);
-          }
+        if (type === tt._in || value === "of") {
+          // auto-const in for-in/of
+          init = this.startNode();
+          init.kind = "const";
+          let decl = this.startNode();
+          this.parseVarHead(decl);
+          this.finishNode(decl, "VariableDeclarator");
+          init.declarations = [decl];
+          this.finishNode(init, "VariableDeclaration");
+        } else if (type === tt.comma || value === "from") {
+          // for-from-array
+          init = this.parseIdentifier();
+        } else {
+          this.unexpected();
+        }
+      } else {
+        // for 0 til 10
+        init = this.parseExpression();
+      }
+
+      if (this.match(tt._in) || this.isContextual("of")) {
+        if (init.declarations.length === 1 && !init.declarations[0].init) {
+          return this.parseParenFreeForIn(node, init);
+        } else {
+          // not sure what should happen here, I think it's unexpected...
+          this.unexpected();
         }
       }
-      this.unexpected();
+
+      if (this.match(tt.semi)) {
+        return this.parseParenFreeFor(node, init);
+      }
+
+      // for i from
+      //       ^
+      // for 0 til
+      //       ^
+      // for i, x from
+      //      ^
+      return this.parseForFrom(node, init);
     };
   });
 
