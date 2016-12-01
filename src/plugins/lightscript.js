@@ -2,7 +2,7 @@ import Parser from "../parser";
 import { types as tt } from "../tokenizer/types";
 
 let pp = Parser.prototype;
-
+const loopLabel = {kind: "loop"};
 
 // mostly a simplified dup of parseVar and parseVarStatement
 
@@ -82,7 +82,7 @@ pp.parseParenFreeForIn = function (node, init) {
   this.next();
   node.left = init;
   node.right = this.parseExpression();
-  // does not expect paren
+  this.expectParenFreeBlockStart();
   node.body = this.parseStatement(false);
   this.state.labels.pop();
   return this.finishNode(node, type);
@@ -96,10 +96,22 @@ pp.parseParenFreeFor = function (node, init) {
   node.test = this.match(tt.semi) ? null : this.parseExpression();
   this.expect(tt.semi);
   node.update = this.match(tt.parenR) ? null : this.parseExpression();
-  if (!this.match(tt.braceL)) this.unexpected();
+  this.expectParenFreeBlockStart();
   node.body = this.parseStatement(false);
   this.state.labels.pop();
   return this.finishNode(node, "ForStatement");
+};
+
+pp.expectParenFreeBlockStart = function () {
+  // if true: blah
+  // if true { blah }
+  if (this.eat(tt.colon)) {
+    if (this.isLineTerminator()) {
+      this.unexpected(null, "Paren-free test expressions can only use a colon in a single line.");
+    }
+  } else if (!this.match(tt.braceL)) {
+    this.unexpected(null, "Paren-free test expressions must be followed by braces or a colon.");
+  }
 };
 
 // for i from 0 til 10
@@ -142,7 +154,7 @@ pp.parseForFrom = function (node, init) {
     node.rangeEnd = this.parseExpression(true);
   }
 
-  if (!this.match(tt.braceL)) this.unexpected();
+  this.expectParenFreeBlockStart();
   node.body = this.parseStatement(false);
 
   this.state.labels.pop();
@@ -152,7 +164,6 @@ pp.parseForFrom = function (node, init) {
 export default function (instance) {
 
   // if, switch, while, with --> don't need no stinkin' parens no more
-  // (do-while still needs them)
 
   instance.extend("parseParenExpression", function (inner) {
     return function () {
@@ -160,18 +171,34 @@ export default function (instance) {
 
       let val = this.parseExpression();
 
-      // enforce brace, so you can't do `if true return`
-      // TODO: reconsider restriction
-      // TODO: consider bailing to native impl
-      if (!this.match(tt.braceL)) {
-        this.unexpected(
-          this.state.pos,
-          "Paren-free test expressions must be followed by braces. " +
-          "Consider wrapping your condition in parens."
-        );
-      }
+      this.expectParenFreeBlockStart();
 
       return val;
+    };
+  });
+
+  // do-while can't use the above-defined parseParenExpression
+  // b/c it expects a trailing colon or brace, which you don't have here.
+
+  instance.extend("parseDoStatement", function () {
+    return function (node) {
+      this.next();
+      this.state.labels.push(loopLabel);
+      node.body = this.parseStatement(false);
+      this.state.labels.pop();
+      this.expect(tt._while);
+
+      // allow parens; if not used, enforce semicolon or newline.
+      if (this.eat(tt.parenL)) {
+        node.test = this.parseExpression();
+        this.expect(tt.parenR);
+        this.eat(tt.semi);
+      } else {
+        node.test = this.parseExpression();
+        this.semicolon();
+      }
+
+      return this.finishNode(node, "DoWhileStatement");
     };
   });
 
@@ -204,7 +231,7 @@ export default function (instance) {
       // for let i = 0; i < len; i++
 
       // ...was copypasta from original parseForStatement
-      this.state.labels.push({kind: "loop"});
+      this.state.labels.push(loopLabel);
 
       if (this.match(tt.semi)) {
         return this.parseParenFreeFor(node, null);
