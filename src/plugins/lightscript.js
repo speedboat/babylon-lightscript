@@ -37,7 +37,7 @@ pp.rewriteAssignmentAsDeclarator = function (node) {
 // Must unwind state after calling this!
 // TODO: remove completely, and replace with a non-lookahead solution for perf.
 
-pp.maybeParseColonConstId = function () {
+pp.maybeParseColonConstId = function (isForOf) {
   if (!this.isPossibleColonConst()) return null;
 
   let id = this.startNode();
@@ -47,7 +47,13 @@ pp.maybeParseColonConstId = function () {
     return null;
   }
 
-  if (!(this.eat(tt.colonEq) || this.isTypedColonConst(id))) return null;
+  // if for-of, require, but do not eat, `of`
+  // else, require and eat `:=` or `: Type =`
+  if (isForOf) {
+    if (!this.isContextual("of")) return null;
+  } else if (!(this.eat(tt.colonEq) || this.isTypedColonConst(id))) {
+    return null;
+  }
 
   return id;
 };
@@ -189,6 +195,7 @@ export default function (instance) {
 
       // for i of x
       // for i in x
+      // for { i } of x
       // for let i of x
       // for i from x
       // for i, x from y
@@ -210,11 +217,11 @@ export default function (instance) {
         this.next();
         this.parseVar(init, true, varKind);
         this.finishNode(init, "VariableDeclaration");
-      } else if (this.isPossibleImplicitConst()) {
+      } else if (this.isPossibleColonConst()) {
         let { type, value } = this.lookahead();
 
         if (type === tt._in || value === "of") {
-          // auto-const in for-in/of
+          // identifier auto-const in for-in/of
           init = this.startNode();
           init.kind = "const";
           let decl = this.startNode();
@@ -226,7 +233,21 @@ export default function (instance) {
           // for-from-array
           init = this.parseIdentifier();
         } else {
-          this.unexpected();
+          // might be destructured auto-const with for-of
+          // (handle separately from name b/c perf and unified with for-in)
+          init = this.startNode();
+          let state = this.state.clone();
+          let id = this.maybeParseColonConstId(true);
+
+          if (id) {
+            this.finishNode(id, "VariableDeclarator");
+            init.kind = "const";
+            init.declarations = [id];
+            this.finishNode(init, "VariableDeclaration");
+          } else {
+            this.state = state;
+            this.unexpected();
+          }
         }
       } else {
         // for 0 til 10
