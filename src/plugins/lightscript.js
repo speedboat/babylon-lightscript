@@ -74,32 +74,124 @@ pp.isTypedColonConst = function (decl) {
   );
 };
 
+// for i of x
+// for i in x
+// for { i } of x
+// for let i of x
+// for i from x
+// for i, x from y
+// for 0 til 10
+// for i from 0 til 10
+// for let i = 0; i < len; i++
+
+pp.parseParenFreeForStatement = function (node, inComprehension = false) {
+  // ...was copypasta from original parseForStatement
+  this.state.labels.push(loopLabel);
+
+  if (this.match(tt.semi)) {
+    return this.parseParenFreeFor(node, null, inComprehension);
+  }
+
+  let init;
+  if (this.match(tt._var) || this.match(tt._let) || this.match(tt._const)) {
+    let varKind = this.state.type;
+    init = this.startNode();
+    this.next();
+    this.parseVar(init, true, varKind);
+    this.finishNode(init, "VariableDeclaration");
+  } else if (this.isPossibleColonConst()) {
+    let { type, value } = this.lookahead();
+
+    if (type === tt._in || value === "of") {
+      // identifier auto-const in for-in/of
+      init = this.startNode();
+      init.kind = "const";
+      let decl = this.startNode();
+      this.parseVarHead(decl);
+      this.finishNode(decl, "VariableDeclarator");
+      init.declarations = [decl];
+      this.finishNode(init, "VariableDeclaration");
+    } else if (type === tt.comma || value === "from") {
+      // for-from-array
+      init = this.parseIdentifier();
+    } else {
+      // might be destructured auto-const with for-of
+      // (handle separately from name b/c perf and unified with for-in)
+      init = this.startNode();
+      let state = this.state.clone();
+      let id = this.maybeParseColonConstId(true);
+
+      if (id) {
+        this.finishNode(id, "VariableDeclarator");
+        init.kind = "const";
+        init.declarations = [id];
+        this.finishNode(init, "VariableDeclaration");
+      } else {
+        this.state = state;
+        this.unexpected();
+      }
+    }
+  } else {
+    // for 0 til 10
+    init = this.parseExpression();
+  }
+
+  if (this.match(tt._in) || this.isContextual("of")) {
+    if (init.declarations.length === 1 && !init.declarations[0].init) {
+      return this.parseParenFreeForIn(node, init, inComprehension);
+    } else {
+      // not sure what should happen here, I think it's unexpected...
+      this.unexpected();
+    }
+  }
+
+  if (this.match(tt.semi)) {
+    return this.parseParenFreeFor(node, init, inComprehension);
+  }
+
+  // for i from
+  //       ^
+  // for 0 til
+  //       ^
+  // for i, x from
+  //      ^
+  return this.parseForFrom(node, init, inComprehension);
+};
+
 // copy/paste from parseForIn, minus the forAwait and parenR expectation
 // TODO: consider handling forAwait
 
-pp.parseParenFreeForIn = function (node, init) {
+pp.parseParenFreeForIn = function (node, init, inComprehension) {
   let type = this.match(tt._in) ? "ForInStatement" : "ForOfStatement";
   this.next();
   node.left = init;
   node.right = this.parseExpression();
-  this.expectParenFreeBlockStart();
-  node.body = this.parseStatement(false);
+  node.body = this.parseParenFreeBody(inComprehension);
   this.state.labels.pop();
   return this.finishNode(node, type);
 };
 
 // largely copypasta, look for opening brace instead of closing paren
 
-pp.parseParenFreeFor = function (node, init) {
+pp.parseParenFreeFor = function (node, init, inComprehension) {
   node.init = init;
   this.expect(tt.semi);
   node.test = this.match(tt.semi) ? null : this.parseExpression();
   this.expect(tt.semi);
   node.update = this.match(tt.parenR) ? null : this.parseExpression();
-  this.expectParenFreeBlockStart();
-  node.body = this.parseStatement(false);
+  node.body = this.parseParenFreeBody(inComprehension);
   this.state.labels.pop();
   return this.finishNode(node, "ForStatement");
+};
+
+pp.parseParenFreeBody = function (inComprehension) {
+  this.expectParenFreeBlockStart();
+
+  if (inComprehension) {
+    return this.parseComprehensionStatement();
+  } else {
+    return this.parseStatement(false);
+  }
 };
 
 pp.expectParenFreeBlockStart = function () {
@@ -119,7 +211,7 @@ pp.expectParenFreeBlockStart = function () {
 // for i from array
 // for i, val from array
 
-pp.parseForFrom = function (node, init) {
+pp.parseForFrom = function (node, init, inComprehension) {
   // (only identifiers for now, no destructuring)
   // will need to construct into VariableDeclaration in babel plugin
   if (this.eat(tt.comma)) {
@@ -154,14 +246,73 @@ pp.parseForFrom = function (node, init) {
     node.rangeEnd = this.parseExpression(true);
   }
 
-  this.expectParenFreeBlockStart();
-  node.body = this.parseStatement(false);
+  node.body = this.parseParenFreeBody(inComprehension);
 
   this.state.labels.pop();
   return this.finishNode(node, "ForFromStatement");
 };
 
+// [for ...: stmnt]
+
+pp.parseArrayComprehension = function () {
+  let node = this.startNode();
+  this.next();
+
+  let loop = this.startNode();
+  this.next();
+  node.loop = this.parseParenFreeForStatement(loop, true);
+
+  this.expect(tt.bracketR);
+
+  return this.finishNode(node, "ArrayComprehension");
+};
+
+// extreme simplification of parseStatement
+// only allow for, if, and ExpressionStatement (without semicolon)
+
+pp.parseComprehensionStatement = function () {
+  let node = this.startNode();
+
+  if (this.eat(tt._for)) {
+    return this.parseParenFreeForStatement(node, true);
+  } else if (this.match(tt._if)) {
+    return this.parseComprehensionIfStatement(node);
+  }
+
+  let expr = this.parseExpression();
+  return this.parseComprehensionExpressionStatement(node, expr);
+};
+
+// c/p parseIfStatement looking for ComprehensionStatement, no else.
+
+pp.parseComprehensionIfStatement = function (node) {
+  this.next();
+  node.test = this.parseParenExpression();
+  node.consequent = this.parseComprehensionStatement(false);
+  if (this.eat(tt._else)) this.unexpected(null, "else is not allowed in comprehensions (yet)");
+  return this.finishNode(node, "IfStatement");
+};
+
+// c/p parseExpressionStatement without semicolon check
+
+pp.parseComprehensionExpressionStatement = function (node, expr) {
+  node.expression = expr;
+  return this.finishNode(node, "ExpressionStatement");
+};
+
 export default function (instance) {
+
+  // check for array comprehension
+
+  instance.extend("parseExprAtom", function (inner) {
+    return function () {
+      // must start with `[` `for`
+      if (this.state.type === tt.bracketL && this.lookahead().type === tt._for) {
+        return this.parseArrayComprehension();
+      }
+      return inner.apply(this, arguments);
+    };
+  });
 
   // if, switch, while, with --> don't need no stinkin' parens no more
 
@@ -220,87 +371,7 @@ export default function (instance) {
         return inner.apply(this, arguments);
       }
 
-      // for i of x
-      // for i in x
-      // for { i } of x
-      // for let i of x
-      // for i from x
-      // for i, x from y
-      // for 0 til 10
-      // for i from 0 til 10
-      // for let i = 0; i < len; i++
-
-      // ...was copypasta from original parseForStatement
-      this.state.labels.push(loopLabel);
-
-      if (this.match(tt.semi)) {
-        return this.parseParenFreeFor(node, null);
-      }
-
-      let init;
-      if (this.match(tt._var) || this.match(tt._let) || this.match(tt._const)) {
-        let varKind = this.state.type;
-        init = this.startNode();
-        this.next();
-        this.parseVar(init, true, varKind);
-        this.finishNode(init, "VariableDeclaration");
-      } else if (this.isPossibleColonConst()) {
-        let { type, value } = this.lookahead();
-
-        if (type === tt._in || value === "of") {
-          // identifier auto-const in for-in/of
-          init = this.startNode();
-          init.kind = "const";
-          let decl = this.startNode();
-          this.parseVarHead(decl);
-          this.finishNode(decl, "VariableDeclarator");
-          init.declarations = [decl];
-          this.finishNode(init, "VariableDeclaration");
-        } else if (type === tt.comma || value === "from") {
-          // for-from-array
-          init = this.parseIdentifier();
-        } else {
-          // might be destructured auto-const with for-of
-          // (handle separately from name b/c perf and unified with for-in)
-          init = this.startNode();
-          let state = this.state.clone();
-          let id = this.maybeParseColonConstId(true);
-
-          if (id) {
-            this.finishNode(id, "VariableDeclarator");
-            init.kind = "const";
-            init.declarations = [id];
-            this.finishNode(init, "VariableDeclaration");
-          } else {
-            this.state = state;
-            this.unexpected();
-          }
-        }
-      } else {
-        // for 0 til 10
-        init = this.parseExpression();
-      }
-
-      if (this.match(tt._in) || this.isContextual("of")) {
-        if (init.declarations.length === 1 && !init.declarations[0].init) {
-          return this.parseParenFreeForIn(node, init);
-        } else {
-          // not sure what should happen here, I think it's unexpected...
-          this.unexpected();
-        }
-      }
-
-      if (this.match(tt.semi)) {
-        return this.parseParenFreeFor(node, init);
-      }
-
-      // for i from
-      //       ^
-      // for 0 til
-      //       ^
-      // for i, x from
-      //      ^
-      return this.parseForFrom(node, init);
+      return this.parseParenFreeForStatement(node);
     };
   });
 
