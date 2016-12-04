@@ -81,7 +81,6 @@ export const types = {
   // in AssignmentExpression nodes.
 
   eq: new TokenType("=", {beforeExpr: true, isAssign: true}),
-  colonEq: new TokenType(":=", {beforeExpr: true, isAssign: true}),
   assign: new TokenType("_=", {beforeExpr: true, isAssign: true}),
   incDec: new TokenType("++/--", {prefix: true, postfix: true, startsExpr: true}),
   prefix: new TokenType("prefix", {beforeExpr: true, prefix: true, startsExpr: true}),
@@ -97,7 +96,11 @@ export const types = {
   modulo: binop("%", 10),
   star: binop("*", 10),
   slash: binop("/", 10),
-  exponent: new TokenType("**", {beforeExpr: true, binop: 11, rightAssociative: true})
+  exponent: new TokenType("**", {beforeExpr: true, binop: 11, rightAssociative: true}),
+
+  // lightscript
+  colonEq: new TokenType(":=", {beforeExpr: true, isAssign: true}),
+  tilde: new TokenType("~"),
 };
 
 // Map keyword names to token types.

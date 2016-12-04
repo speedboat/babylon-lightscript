@@ -327,6 +327,17 @@ pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
       node.property = this.parseIdentifier(true);
       node.computed = false;
       base = this.finishNode(node, "MemberExpression");
+    } else if (this.hasPlugin("lightscript") && !noCalls && this.eat(tt.tilde)) {
+      let node = this.startNodeAt(startPos, startLoc);
+      node.left = base;
+      // allow Identifier or MemberExpression, but not calls
+      node.right = this.parseSubscripts(this.parseIdentifier(), this.state.start, this.state.startLoc, true);
+
+      // c/p from CallExpression bit just below, don't really know what it does...
+      let possibleAsync = this.state.potentialArrowAt === base.start && base.type === "Identifier" && base.name === "async" && !this.canInsertSemicolon();
+      this.expect(tt.parenL);
+      node.arguments = this.parseCallExpressionArguments(tt.parenR, possibleAsync);
+      base = this.finishNode(node, "TildeCallExpression");
     } else if (this.eat(tt.bracketL)) {
       let node = this.startNodeAt(startPos, startLoc);
       node.object = base;

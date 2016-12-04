@@ -475,7 +475,13 @@ export default class Tokenizer {
         return this.readToken_eq_excl(code);
 
       case 126: // '~'
-        return this.finishOp(tt.prefix, 1);
+        if (this.hasPlugin("lightscript")) {
+          ++this.state.pos;
+          return this.finishToken(tt.tilde);
+        } else {
+          return this.finishOp(tt.prefix, 1);
+        }
+
     }
 
     this.raise(this.state.pos, `Unexpected character '${codePointToString(code)}'`);
