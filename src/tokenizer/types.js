@@ -54,6 +54,10 @@ export class BinopTokenType extends TokenType {
 }
 
 export const types = {
+  // LightScript
+  colonEq: new TokenType(":=", { beforeExpr, isAssign }),
+  tilde: new TokenType("~"),
+
   num: new TokenType("num", { startsExpr }),
   regexp: new TokenType("regexp", { startsExpr }),
   string: new TokenType("string", { startsExpr }),
@@ -97,7 +101,6 @@ export const types = {
   // in AssignmentExpression nodes.
 
   eq: new TokenType("=", { beforeExpr, isAssign }),
-  colonEq: new TokenType(":=", { beforeExpr, isAssign }),
   assign: new TokenType("_=", { beforeExpr, isAssign }),
   incDec: new TokenType("++/--", { prefix, postfix, startsExpr }),
   prefix: new TokenType("prefix", { beforeExpr, prefix, startsExpr }),
