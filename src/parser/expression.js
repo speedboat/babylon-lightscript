@@ -108,14 +108,14 @@ pp.parseMaybeAssign = function (noIn, refShorthandDefaultPos, afterLeftParse, re
     this.state.potentialArrowAt = this.state.start;
   }
 
-  let leftStartsLine = this.isLineBreak();  // for lightscript
+  const leftStartsLine = this.isLineBreak();  // for lightscript
   let left = this.parseMaybeConditional(noIn, refShorthandDefaultPos, refNeedsArrowPos);
   if (afterLeftParse) left = afterLeftParse.call(this, left, startPos, startLoc);
 
   // `varName: type = val`, with unwinding
   let typeAnnotation;
   if (this.hasPlugin("lightscript") && this.hasPlugin("flow") && leftStartsLine && this.match(tt.colon)) {
-    let state = this.state.clone();
+    const state = this.state.clone();
     try {
       typeAnnotation = this.flowParseTypeAnnotation();
     } catch (err) {
@@ -132,7 +132,10 @@ pp.parseMaybeAssign = function (noIn, refShorthandDefaultPos, afterLeftParse, re
     const node = this.startNodeAt(startPos, startLoc);
     node.operator = this.state.value;
 
-    let isColonEq = this.hasPlugin("lightscript") && this.match(tt.colonEq);
+    // `or` -> `||` etc.
+    if (this.hasPlugin("lightscript")) this.rewriteOperator(node);
+
+    const isColonEq = this.hasPlugin("lightscript") && this.match(tt.colonEq);
     if (isColonEq && !leftStartsLine) this.unexpected(startPos, "':=' assignment must occur at the beginning of a line.");
 
     node.left = this.match(tt.eq) || isColonEq ? this.toAssignable(left, undefined, "assignment expression") : left;
@@ -218,6 +221,9 @@ pp.parseExprOp = function(left, leftStartPos, leftStartLoc, minPrec, noIn) {
       node.left = left;
       node.operator = this.state.value;
 
+      // `or` -> `||` etc.
+      if (this.hasPlugin("lightscript")) this.rewriteOperator(node);
+
       if (
         node.operator === "**" &&
         left.type === "UnaryExpression" &&
@@ -249,6 +255,10 @@ pp.parseMaybeUnary = function (refShorthandDefaultPos) {
     const node = this.startNode();
     const update = this.match(tt.incDec);
     node.operator = this.state.value;
+
+    // `not` -> `!` etc.
+    if (this.hasPlugin("lightscript")) this.rewriteOperator(node);
+
     node.prefix = true;
     this.next();
 

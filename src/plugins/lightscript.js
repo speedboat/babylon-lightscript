@@ -1,7 +1,7 @@
 import Parser from "../parser";
 import { types as tt } from "../tokenizer/types";
 
-let pp = Parser.prototype;
+const pp = Parser.prototype;
 
 // mostly a simplified dup of parseVar and parseVarStatement
 
@@ -39,7 +39,7 @@ pp.rewriteAssignmentAsDeclarator = function (node) {
 pp.maybeParseColonConstId = function (isForOf) {
   if (!this.isPossibleColonConst()) return null;
 
-  let id = this.startNode();
+  const id = this.startNode();
   try {
     this.parseVarHead(id);
   } catch (err) {
@@ -73,10 +73,24 @@ pp.isTypedColonConst = function (decl) {
   );
 };
 
+const REMAPPED_OPERATORS = {
+  "!=": "!==",
+  "==": "===",
+  "or": "||",
+  "and": "&&",
+  "not": "!",
+};
+
+pp.rewriteOperator = function (node) {
+  if (REMAPPED_OPERATORS[node.operator]) {
+    node.operator = REMAPPED_OPERATORS[node.operator];
+  }
+};
+
 pp.parseForFrom = function (node, iterator) {
   this.expectContextual("from");
   // `for i from`
-  let arrayOrRangeStart = this.parseExpression(true);
+  const arrayOrRangeStart = this.parseExpression(true);
   if (this.match(tt._thru) || this.match(tt._til)) {
     return this.parseForFromRange(node, iterator, arrayOrRangeStart);
   } else {
@@ -146,7 +160,7 @@ pp.expectParenFreeBlockStart = function () {
 // [for ...: stmnt]
 
 pp.parseArrayComprehension = function (node) {
-  let loop = this.startNode();
+  const loop = this.startNode();
   node.loop = this.parseForStatement(loop);
   this.expect(tt.bracketR);
   return this.finishNode(node, "ArrayComprehension");
@@ -159,7 +173,7 @@ export default function (instance) {
   instance.extend("parseParenExpression", function (inner) {
     return function () {
       if (this.match(tt.parenL)) return inner.apply(this, arguments);
-      let val = this.parseExpression();
+      const val = this.parseExpression();
       this.expectParenFreeBlockStart();
       return val;
     };
@@ -170,10 +184,10 @@ export default function (instance) {
   instance.extend("parseStatement", function (inner) {
     return function () {
       if (this.match(tt.braceL)) {
-        let state = this.state.clone();
-        let node = this.startNode();
+        const state = this.state.clone();
+        const node = this.startNode();
 
-        let id = this.maybeParseColonConstId();
+        const id = this.maybeParseColonConstId();
         if (id) {
           return this.parseColonEq(node, id);
         } else {
@@ -188,10 +202,10 @@ export default function (instance) {
 
   instance.extend("parseExport", function (inner) {
     return function (node) {
-      let state = this.state.clone();
+      const state = this.state.clone();
       this.next();
-      let decl = this.startNode();
-      let id = this.maybeParseColonConstId();
+      const decl = this.startNode();
+      const id = this.maybeParseColonConstId();
 
       if (id) {
         node.specifiers = [];
@@ -203,6 +217,28 @@ export default function (instance) {
         this.state = state;
         return inner.apply(this, arguments);
       }
+    };
+  });
+
+  // whitespace following a colon
+
+  instance.extend("parseStatement", function (inner) {
+    return function () {
+      if (this.match(tt.colon)) {
+        return this.parseWhiteBlock();
+      }
+      return inner.apply(this, arguments);
+    };
+  });
+
+  // whitespace following a colon
+
+  instance.extend("parseBlock", function (inner) {
+    return function (allowDirectives) {
+      if (this.match(tt.colon)) {
+        return this.parseWhiteBlock(allowDirectives);
+      }
+      return inner.apply(this, arguments);
     };
   });
 }

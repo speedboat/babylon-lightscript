@@ -120,6 +120,9 @@ export const keywords = {
   // LightScript
   "til": new KeywordTokenType("til", { beforeExpr }),
   "thru": new KeywordTokenType("thru", { beforeExpr }),
+  "or": types.logicalOR,
+  "and": types.logicalAND,
+  "not": new KeywordTokenType("not", { beforeExpr, prefix, startsExpr }),
 
   "break": new KeywordTokenType("break"),
   "case": new KeywordTokenType("case", { beforeExpr }),
