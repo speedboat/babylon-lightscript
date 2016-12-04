@@ -147,4 +147,17 @@ kw("instanceof", {beforeExpr: true, binop: 7});
 kw("typeof", {beforeExpr: true, prefix: true, startsExpr: true});
 kw("void", {beforeExpr: true, prefix: true, startsExpr: true});
 kw("delete", {beforeExpr: true, prefix: true, startsExpr: true});
+
+// lightscript
+
 kw("til", beforeExpr);
+
+function kwAlias(name, targetType) {
+  keywords[name] = types["_" + name] = targetType;
+}
+
+kwAlias("or", types.logicalOR);
+kwAlias("and", types.logicalAND);
+kw("is", {beforeExpr: true, binop: 6});
+kw("isnt", {beforeExpr: true, binop: 6});
+kw("not", {beforeExpr: true, prefix: true, startsExpr: true});

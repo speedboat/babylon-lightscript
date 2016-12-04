@@ -1,2 +1,2 @@
-x 
- isnt y
+x
+ iznt y

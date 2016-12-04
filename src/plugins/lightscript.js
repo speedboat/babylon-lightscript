@@ -74,6 +74,20 @@ pp.isTypedColonConst = function (decl) {
   );
 };
 
+const WORD_OPERATORS = {
+  "or": "||",
+  "and": "&&",
+  "is": "===",
+  "isnt": "!==",
+  "not": "!",
+};
+
+pp.rewriteWordOperator = function (node) {
+  if (WORD_OPERATORS[node.operator]) {
+    node.operator = WORD_OPERATORS[node.operator];
+  }
+};
+
 // for i of x
 // for i in x
 // for { i } of x
@@ -378,6 +392,28 @@ export default function (instance) {
         this.state = state;
         return inner.apply(this, arguments);
       }
+    };
+  });
+
+  // whitespace following a colon
+
+  instance.extend("parseStatement", function (inner) {
+    return function () {
+      if (this.match(tt.colon)) {
+        return this.parseWhiteBlock();
+      }
+      return inner.apply(this, arguments);
+    };
+  });
+
+  // whitespace following a colon
+
+  instance.extend("parseBlock", function (inner) {
+    return function (allowDirectives) {
+      if (this.match(tt.colon)) {
+        return this.parseWhiteBlock(allowDirectives);
+      }
+      return inner.apply(this, arguments);
     };
   });
 }

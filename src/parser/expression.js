@@ -135,6 +135,9 @@ pp.parseMaybeAssign = function (noIn, refShorthandDefaultPos, afterLeftParse, re
     let node = this.startNodeAt(startPos, startLoc);
     node.operator = this.state.value;
 
+    // `or` -> `||` etc.
+    if (this.hasPlugin("lightscript")) this.rewriteWordOperator(node);
+
     let isColonEq = this.hasPlugin("lightscript") && this.match(tt.colonEq);
     if (isColonEq && !leftStartsLine) this.unexpected(startPos, "':=' assignment must occur at the beginning of a line.");
 
@@ -219,6 +222,9 @@ pp.parseExprOp = function(left, leftStartPos, leftStartLoc, minPrec, noIn) {
       node.left = left;
       node.operator = this.state.value;
 
+      // `isnt` -> `!==` etc.
+      if (this.hasPlugin("lightscript")) this.rewriteWordOperator(node);
+
       if (
         node.operator === "**" &&
         left.type === "UnaryExpression" &&
@@ -250,6 +256,10 @@ pp.parseMaybeUnary = function (refShorthandDefaultPos) {
     let node = this.startNode();
     let update = this.match(tt.incDec);
     node.operator = this.state.value;
+
+    // `not` -> `!` etc.
+    if (this.hasPlugin("lightscript")) this.rewriteWordOperator(node);
+
     node.prefix = true;
     this.next();
 
