@@ -339,6 +339,13 @@ pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
       this.expect(tt.parenL);
       node.arguments = this.parseCallExpressionArguments(tt.parenR, possibleAsync);
       base = this.finishNode(node, "TildeCallExpression");
+    } else if (this.hasPlugin("lightscript") && this.isNumberStartingWithDot()) {
+      // parses x.0, x.1, etc, as x[0], x[1], etc.
+      let node = this.startNodeAt(startPos, startLoc);
+      node.object = base;
+      node.property = this.parseNumericLiteralMember();
+      node.computed = true;
+      base = this.finishNode(node, "MemberExpression");
     } else if (this.eat(tt.bracketL)) {
       const node = this.startNodeAt(startPos, startLoc);
       node.object = base;
