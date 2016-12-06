@@ -152,7 +152,7 @@ pp.expectParenFreeBlockStart = function () {
   // if true { blah }
   // if (true) blah
   // TODO: ensure matching parens, not just allowing one on either side
-  if (!(this.eat(tt.colon) && !this.isLineBreak() || this.match(tt.braceL) || this.eat(tt.parenR))) {
+  if (!(this.match(tt.colon) || this.match(tt.braceL) || this.eat(tt.parenR))) {
     this.unexpected(null, "Paren-free test expressions must be followed by braces or a colon.");
   }
 };
@@ -199,6 +199,68 @@ pp.parseNumericLiteralMember = function () {
   }
 
   return node;
+};
+
+// c/p parseBlock
+
+pp.parseWhiteBlock = function (allowDirectives?) {
+  let node = this.startNode(), indentLevel = this.state.indentLevel;
+
+  // TODO: also ->, =>, others?
+  if (!this.eat(tt.colon)) this.unexpected();
+
+  if (!this.isLineTerminator()) {
+    return this.parseStatement(false);
+  }
+
+  this.parseWhiteBlockBody(node, allowDirectives, indentLevel);
+  if (!node.body.length) this.unexpected(node.start, "Expected an Indent or Statement");
+
+  return this.finishNode(node, "BlockStatement");
+};
+
+// c/p parseBlockBody, but indentLevel instead of end (and no topLevel)
+
+pp.parseWhiteBlockBody = function (node, allowDirectives, indentLevel) {
+  node.body = [];
+  node.directives = [];
+
+  let parsedNonDirective = false;
+  let oldStrict;
+  let octalPosition;
+
+  while (this.state.indentLevel > indentLevel && !this.match(tt.eof)) {
+    if (!parsedNonDirective && this.state.containsOctal && !octalPosition) {
+      octalPosition = this.state.octalPosition;
+    }
+
+    let stmt = this.parseStatement(true, false);
+
+    if (allowDirectives && !parsedNonDirective &&
+        stmt.type === "ExpressionStatement" && stmt.expression.type === "StringLiteral" &&
+        !stmt.expression.extra.parenthesized) {
+      let directive = this.stmtToDirective(stmt);
+      node.directives.push(directive);
+
+      if (oldStrict === undefined && directive.value.value === "use strict") {
+        oldStrict = this.state.strict;
+        this.setStrict(true);
+
+        if (octalPosition) {
+          this.raise(octalPosition, "Octal literal in strict mode");
+        }
+      }
+
+      continue;
+    }
+
+    parsedNonDirective = true;
+    node.body.push(stmt);
+  }
+
+  if (oldStrict === false) {
+    this.setStrict(false);
+  }
 };
 
 export default function (instance) {

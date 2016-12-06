@@ -93,6 +93,18 @@ pp.jsxReadNewLine = function(normalizeCRLF) {
   ++this.state.curLine;
   this.state.lineStart = this.state.pos;
 
+  // DUP in `Tokenizer.skipSpace()`
+  if (this.hasPlugin("lightscript")) {
+    this.state.indentLevel = 0;
+    while (this.input.charCodeAt(this.state.pos) === 32) {
+      if (this.input.charCodeAt(this.state.pos + 1) === 32) {
+        ++this.state.pos;
+        ++this.state.pos;
+        ++this.state.indentLevel;
+      }
+    }
+  }
+
   return out;
 };
 

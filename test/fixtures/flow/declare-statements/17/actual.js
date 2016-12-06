@@ -1,5 +1,5 @@
 declare class X {
-	a: number;
-	static b: number;
-	c: number;
+ a: number;
+ static b: number;
+ c: number;
 }

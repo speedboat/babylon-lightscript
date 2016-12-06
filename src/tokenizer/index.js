@@ -202,11 +202,28 @@ export default class Tokenizer {
   // whitespace and comments, and.
 
   skipSpace() {
+    let isNewLine = false;
     loop: while (this.state.pos < this.input.length) {
       const ch = this.input.charCodeAt(this.state.pos);
       switch (ch) {
-        case 32: case 160: // ' '
+        case 160:
+          if (this.hasPlugin("lightscript")) {
+            this.unexpected(null, "nbsp is illegal in lightscript; use a normal space.");
+          }
+
+        case 32: // ' '
           ++this.state.pos;
+
+          // DUP in `jsxReadNewLine()`
+          if (this.hasPlugin("lightscript") && isNewLine) {
+            if (this.input.charCodeAt(this.state.pos) === 32) {
+              ++this.state.pos;
+              ++this.state.indentLevel;
+            } else {
+              // TODO: consider
+              // this.unexpected(null, "Odd indentation.");
+            }
+          }
           break;
 
         case 13:
@@ -218,6 +235,8 @@ export default class Tokenizer {
           ++this.state.pos;
           ++this.state.curLine;
           this.state.lineStart = this.state.pos;
+          isNewLine = true;
+          this.state.indentLevel = 0;
           break;
 
         case 47: // '/'
@@ -237,6 +256,7 @@ export default class Tokenizer {
 
         default:
           if (ch > 8 && ch < 14 || ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch))) {
+            if (this.hasPlugin("lightscript")) this.unexpected(null, "Only normal whitespace (ascii-32) is allowed.");
             ++this.state.pos;
           } else {
             break loop;

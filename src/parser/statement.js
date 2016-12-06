@@ -717,9 +717,17 @@ pp.parseClassBody = function (node) {
 
   classBody.body = [];
 
-  this.expect(tt.braceL);
+  let isEnd;
+  if (this.hasPlugin("lightscript") && this.match(tt.colon)) {
+    let indentLevel = this.state.indentLevel;
+    this.next();
+    isEnd = () => this.state.indentLevel <= indentLevel || this.match(tt.eof);
+  } else {
+    this.expect(tt.braceL);
+    isEnd = () => this.eat(tt.braceR);
+  }
 
-  while (!this.eat(tt.braceR)) {
+  while (!isEnd()) {
     if (this.eat(tt.semi)) {
       continue;
     }
