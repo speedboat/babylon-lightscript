@@ -35,6 +35,8 @@ export default class State {
     this.pos = this.lineStart = 0;
     this.curLine = 1;
 
+    this.indentLevel = 0;
+
     this.type = tt.eof;
     this.value = null;
     this.start = this.end = this.pos;
