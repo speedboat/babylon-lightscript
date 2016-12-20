@@ -206,11 +206,13 @@ pp.parseNumericLiteralMember = function () {
 pp.parseWhiteBlock = function (allowDirectives?) {
   const node = this.startNode(), indentLevel = this.state.indentLevel;
 
-  // TODO: also ->, =>, others?
-  if (!this.eat(tt.colon)) this.unexpected();
-
-  if (!this.isLineTerminator()) {
-    return this.parseStatement(false);
+  // must start with colon or arrow
+  if (this.eat(tt.colon)) {
+    if (!this.isLineTerminator()) return this.parseStatement(false);
+  } else if (this.eat(tt.arrow)) {
+    if (!this.isLineTerminator()) return this.parseMaybeAssign();
+  } else {
+    this.unexpected(null, "Whitespace Block must start with a colon or arrow");
   }
 
   this.parseWhiteBlockBody(node, allowDirectives, indentLevel);
@@ -280,6 +282,25 @@ pp.isNextCharWhitespace = function () {
   return this.isWhitespaceAt(this.state.end);
 };
 
+// currently unused, but totally the kind of thing that might come in handy.
+
+pp.isFollowedByLineBreak = function () {
+  const end = this.state.input.length;
+
+  let pos = this.state.pos;
+  while (pos < end) {
+    const code = this.state.input.charCodeAt(pos);
+    if (code === 10) {
+      return true;
+    } else if (code === 32 || code === 13) {
+      ++pos;
+      continue;
+    } else {
+      return false;
+    }
+  }
+};
+
 // detect whether we're on a (non-indented) newline
 // relative to another position, eg;
 // x y -> false
@@ -308,6 +329,116 @@ pp.indentLevelAt = function (pos) {
     }
   }
   return indents;
+};
+
+pp.parseArrowType = function (node) {
+  if (!this.match(tt.arrow)) return;
+  const val = this.state.value;
+
+  // validations
+  const isPlainFatArrow = val === "=>" && !node.id && !node.key;
+  if (node.async && !isPlainFatArrow) this.unexpected(node.start, "Can't use async with lightscript arrows.");
+  if (node.generator) this.unexpected(node.start, "Can't declare generators with arrows; try -*> instead.");
+  if (node.kind === "get") this.unexpected(node.start, "Can't use arrow method with get; try -get> instead.");
+  if (node.kind === "set") this.unexpected(node.start, "Can't use arrow method with set; try -set> instead.");
+  if (node.kind === "constructor" && val !== "->") this.unexpected(null, "Can only use -> with constructor.");
+
+  switch (val) {
+    case "=/>": case "-/>":
+      node.async = true;
+      break;
+    case "=*>": case "-*>":
+      node.generator = true;
+      break;
+    case "-get>":
+      // TODO: validate that it's in a method not a function
+      if (!node.kind) this.unexpected(null, "Only methods can be getters.");
+      node.kind = "get";
+      break;
+    case "-set>":
+      if (!node.kind) this.unexpected(null, "Only methods can be setters.");
+      node.kind = "set";
+      break;
+    case "=>": case "->":
+      break;
+    default:
+      this.unexpected();
+  }
+
+  if (val[0] === "-") {
+    node.skinny = true;
+  } else if (val[0] === "=") {
+    node.skinny = false;
+  } else {
+    this.unexpected();
+  }
+};
+
+// largely c/p from parseFunctionBody
+
+pp.parseArrowFunctionBody = function (node) {
+  // set and reset state surrounding block
+  const oldInAsync = this.state.inAsync,
+    oldInGen = this.state.inGenerator,
+    oldLabels = this.state.labels,
+    oldInFunc = this.state.inFunction;
+  this.state.inAsync = node.async;
+  this.state.inGenerator = node.generator;
+  this.state.labels = [];
+  this.state.inFunction = true;
+
+
+  if (this.lookahead().type === tt.braceL) {
+    this.next();
+    node.white = false;
+    node.body = this.parseBlock(true);
+  } else {
+    node.white = true;
+    node.body = this.parseWhiteBlock(true);
+    if (node.body.type !== "BlockStatement") {
+      node.expression = true;
+    }
+  }
+
+  this.state.inAsync = oldInAsync;
+  this.state.inGenerator = oldInGen;
+  this.state.labels = oldLabels;
+  this.state.inFunction = oldInFunc;
+
+  this.validateFunctionBody(node, true);
+};
+
+pp.parseNamedArrowFromCallExpression = function (node, call) {
+  this.initFunction(node);
+  node.params = this.toAssignableList(call.arguments, true, "named arrow function parameters");
+  if (call.typeParameters) node.typeParameters = call.typeParameters;
+
+  let isMember;
+  if (call.callee.type === "Identifier") {
+    node.id = call.callee;
+    isMember = false;
+  } else if (call.callee.type === "MemberExpression") {
+    node.id = call.callee.property;
+    node.object = call.callee.object;
+    isMember = true;
+  } else {
+    this.unexpected();
+  }
+
+  if (this.match(tt.colon)) {
+    const oldNoAnonFunctionType = this.state.noAnonFunctionType;
+    this.state.noAnonFunctionType = true;
+    node.returnType = this.flowParseTypeAnnotation();
+    this.state.noAnonFunctionType = oldNoAnonFunctionType;
+  }
+  if (this.canInsertSemicolon()) this.unexpected();
+
+  this.check(tt.arrow);
+  this.parseArrowType(node);
+  this.parseArrowFunctionBody(node);
+
+  // may be later rewritten as "NamedArrowDeclaration" in parseStatement
+  return this.finishNode(node, isMember ? "NamedArrowMemberExpression" : "NamedArrowExpression");
 };
 
 
@@ -343,7 +474,7 @@ export default function (instance) {
     };
   });
 
-  // also for `:=`, since `export` is the only time it can be preceded by a newline.
+  // `export` is the only time `:=` can be preceded by a newline.
 
   instance.extend("parseExport", function (inner) {
     return function (node) {

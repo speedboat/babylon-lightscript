@@ -164,7 +164,7 @@ pp.parseMaybeAssign = function (noIn, refShorthandDefaultPos, afterLeftParse, re
     this.next();
     node.right = this.parseMaybeAssign(noIn);
     return this.finishNode(node, "AssignmentExpression");
-  } else if (failOnShorthandAssign && refShorthandDefaultPos.start) {
+  } else /* TODO: consider parsing light arrows here */ if (failOnShorthandAssign && refShorthandDefaultPos.start) {
     this.unexpected(refShorthandDefaultPos.start);
   }
 
@@ -380,9 +380,40 @@ pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
 
       if (possibleAsync && this.shouldParseAsyncArrow()) {
         return this.parseAsyncArrowFromCallExpression(this.startNodeAt(startPos, startLoc), node);
-      } else {
-        this.toReferencedList(node.arguments);
+      } else if (this.hasPlugin("lightscript") && this.shouldParseAsyncArrow()) {
+
+        // could be a function call followed by a colon-block, eg `if fn(): blah`
+        // or an annotated NamedArrowExpression, eg `fn(): blah ->`
+        // Disambiguating is hard, especially with good error messages...
+        // TODO: relentlessly test edge cases.
+        // This is one of the most likely sources of bugs I've encountered yet.
+        if (this.match(tt.colon)) {
+          const state = this.state.clone();
+          try {
+            return this.parseNamedArrowFromCallExpression(this.startNodeAt(startPos, startLoc), node);
+          } catch (err) {
+            if (this.match(tt.arrow)) throw err;
+            this.state = state;
+          }
+        } else {
+          return this.parseNamedArrowFromCallExpression(this.startNodeAt(startPos, startLoc), node);
+        }
       }
+      this.toReferencedList(node.arguments);
+    } else if (this.hasPlugin("lightscript") && this.hasPlugin("flow") && this.isRelational("<")) {
+      // `fn<T>() ->`, c/p of the above, but for `<`
+      const node = this.startNodeAt(startPos, startLoc), state = this.state.clone();
+      node.callee = base;
+      try {
+        node.typeParameters = this.flowParseTypeParameterDeclaration();
+        this.expect(tt.parenL);
+      } catch (err) {
+        this.state = state;
+        return base;
+      }
+      node.arguments = this.parseCallExpressionArguments(tt.parenR, false);
+      if (!this.shouldParseArrow()) this.unexpected();
+      return this.parseNamedArrowFromCallExpression(this.startNodeAt(startPos, startLoc), node);
     } else if (this.match(tt.backQuote)) {
       const node = this.startNodeAt(startPos, startLoc);
       node.tag = base;
@@ -432,7 +463,7 @@ pp.shouldParseAsyncArrow = function () {
 };
 
 pp.parseAsyncArrowFromCallExpression = function (node, call) {
-  this.expect(tt.arrow);
+  this.check(tt.arrow);
   return this.parseArrowExpression(node, call.arguments, true);
 };
 
@@ -502,12 +533,12 @@ pp.parseExprAtom = function (refShorthandDefaultPos) {
         return this.parseFunction(node, false, false, true);
       } else if (canBeArrow && id.name === "async" && this.match(tt.name)) {
         const params = [this.parseIdentifier()];
-        this.expect(tt.arrow);
+        this.check(tt.arrow);
         // let foo = bar => {};
         return this.parseArrowExpression(node, params, true);
       }
 
-      if (canBeArrow && !this.canInsertSemicolon() && this.eat(tt.arrow)) {
+      if (canBeArrow && !this.canInsertSemicolon() && this.match(tt.arrow)) {
         return this.parseArrowExpression(node, [id]);
       }
 
@@ -717,7 +748,7 @@ pp.shouldParseArrow = function () {
 };
 
 pp.parseArrow = function (node) {
-  if (this.eat(tt.arrow)) {
+  if (this.match(tt.arrow)) {
     return node;
   }
 };
@@ -1005,7 +1036,21 @@ pp.parseMethod = function (node, isGenerator, isAsync) {
   this.expect(tt.parenL);
   node.params = this.parseBindingList(tt.parenR);
   node.generator = !!isGenerator;
-  this.parseFunctionBody(node);
+
+  if (this.hasPlugin("lightscript") && this.match(tt.colon)) {
+    const oldNoAnonFunctionType = this.state.noAnonFunctionType;
+    this.state.noAnonFunctionType = true;
+    node.returnType = this.flowParseTypeAnnotation();
+    this.state.noAnonFunctionType = oldNoAnonFunctionType;
+  }
+
+  if (this.hasPlugin("lightscript") && this.match(tt.arrow)) {
+    this.parseArrowType(node);
+    this.parseArrowFunctionBody(node);
+  } else {
+    this.parseFunctionBody(node);
+  }
+
   this.state.inMethod = oldInMethod;
   return node;
 };
@@ -1015,7 +1060,15 @@ pp.parseMethod = function (node, isGenerator, isAsync) {
 pp.parseArrowExpression = function (node, params, isAsync) {
   this.initFunction(node, isAsync);
   node.params = this.toAssignableList(params, true, "arrow function parameters");
-  this.parseFunctionBody(node, true);
+
+  if (this.hasPlugin("lightscript")) {
+    this.check(tt.arrow);
+    this.parseArrowType(node);
+    this.parseArrowFunctionBody(node);
+  } else {
+    this.expect(tt.arrow);
+    this.parseFunctionBody(node, true);
+  }
   return this.finishNode(node, "ArrowFunctionExpression");
 };
 
@@ -1052,6 +1105,12 @@ pp.parseFunctionBody = function (node, allowExpression) {
     this.state.inFunction = oldInFunc; this.state.inGenerator = oldInGen; this.state.labels = oldLabels;
   }
   this.state.inAsync = oldInAsync;
+
+  this.validateFunctionBody(node, allowExpression);
+};
+
+pp.validateFunctionBody = function (node, allowExpression) {
+  const isExpression = node.expression;
 
   // If this is a strict mode function, verify that argument names
   // are not repeated, and it does not try to bind the words `eval`

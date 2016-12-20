@@ -141,6 +141,11 @@ pp.parseStatement = function (declaration, topLevel) {
     return this.finishNode(node, "VariableDeclaration");
   }
 
+  // rewrite standalone NamedArrowExpression as NamedArrowDeclaration
+  if (this.hasPlugin("lightscript") && expr.type === "NamedArrowExpression") {
+    return this.finishNode(expr, "NamedArrowDeclaration");
+  }
+
   if (starttype === tt.name && expr.type === "Identifier" && this.eat(tt.colon)) {
     const labeledNode = this.parseLabeledStatement(node, maybeName, expr);
 
@@ -828,6 +833,11 @@ pp.parseClassBody = function (node) {
     }
 
     this.parseClassMethod(classBody, method, isGenerator, isAsync);
+
+    // handle -get> and -set> arrow types
+    if (this.hasPlugin("lightscript") && !isGetSet) {
+      if (method.kind === "get" || method.kind === "set") isGetSet = true;
+    }
 
     if (isGetSet) {
       this.checkGetterSetterParamCount(method);

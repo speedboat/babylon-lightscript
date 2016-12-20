@@ -92,7 +92,7 @@
               "name": "a"
             },
             {
-              "type": "LightArrowExpression",
+              "type": "NamedArrowExpression",
               "start": 6,
               "end": 25,
               "loc": {
