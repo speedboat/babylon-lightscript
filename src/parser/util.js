@@ -88,6 +88,12 @@ pp.expect = function (type, pos) {
   return this.eat(type) || this.unexpected(pos, type);
 };
 
+// Expect, but without eating
+
+pp.check = function (type, pos) {
+  return this.match(type) || this.unexpected(pos, type);
+};
+
 // Raise an unexpected token error. Can take the expected token type
 // instead of a message string.
 

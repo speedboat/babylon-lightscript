@@ -356,11 +356,13 @@ pp.parseNumericLiteralMember = function () {
 pp.parseWhiteBlock = function (allowDirectives?) {
   let node = this.startNode(), indentLevel = this.state.indentLevel;
 
-  // TODO: also ->, =>, others?
-  if (!this.eat(tt.colon)) this.unexpected();
-
-  if (!this.isLineTerminator()) {
-    return this.parseStatement(false);
+  // must start with colon or arrow
+  if (this.eat(tt.colon)) {
+    if (!this.isLineTerminator()) return this.parseStatement(false);
+  } else if (this.eat(tt.arrow)) {
+    if (!this.isLineTerminator()) return this.parseMaybeAssign();
+  } else {
+    this.unexpected(null, "Whitespace Block must start with a colon or arrow");
   }
 
   this.parseWhiteBlockBody(node, allowDirectives, indentLevel);
@@ -458,6 +460,145 @@ pp.indentLevelAt = function (pos) {
     }
   }
   return indents;
+};
+
+pp.parseArrowType = function (node) {
+  if (!this.match(tt.arrow)) return;
+  let val = this.state.value;
+
+  // validations
+  let isPlainFatArrow = val === "=>" && !node.id && !node.key;
+  if (node.async && !isPlainFatArrow) this.unexpected(node.start, "Can't use async with lightscript arrows.");
+  if (node.generator) this.unexpected(node.start, "Can't declare generators with arrows; try -*> instead.");
+  if (node.kind === "get") this.unexpected(node.start, "Can't use arrow method with get; try -get> instead.");
+  if (node.kind === "set") this.unexpected(node.start, "Can't use arrow method with set; try -set> instead.");
+  if (node.kind === "constructor" && val !== "->") this.unexpected(null, "Can only use -> with constructor.");
+
+  switch (val) {
+  case "=/>": case "-/>":
+    node.async = true;
+    break;
+  case "=*>": case "-*>":
+    node.generator = true;
+    break;
+  case "-get>":
+    // TODO: validate that it's in a method not a function
+    if (!node.kind) this.unexpected(null, "Only methods can be getters.");
+    node.kind = "get";
+    break;
+  case "-set>":
+    if (!node.kind) this.unexpected(null, "Only methods can be setters.");
+    node.kind = "set";
+    break;
+  case "=>": case "->":
+    break;
+  default:
+    this.unexpected();
+  }
+
+  if (val[0] === "-") {
+    node.skinny = true;
+  } else if (val[0] === "=") {
+    node.skinny = false;
+  } else {
+    this.unexpected();
+  }
+};
+
+// largely c/p from parseFunctionBody
+
+pp.parseArrowFunctionBody = function (node) {
+  // set and reset state surrounding block
+  let oldInAsync = this.state.inAsync,
+    oldInGen = this.state.inGenerator,
+    oldLabels = this.state.labels,
+    oldInFunc = this.state.inFunction;
+  this.state.inAsync = node.async;
+  this.state.inGenerator = node.generator;
+  this.state.labels = [];
+  this.state.inFunction = true;
+
+
+  if (this.lookahead().type === tt.braceL) {
+    this.next();
+    node.white = false;
+    node.body = this.parseBlock(true);
+  } else {
+    node.white = true;
+    node.body = this.parseWhiteBlock(true);
+    if (node.body.type !== "BlockStatement") {
+      node.expression = true;
+    }
+  }
+
+  this.state.inAsync = oldInAsync;
+  this.state.inGenerator = oldInGen;
+  this.state.labels = oldLabels;
+  this.state.inFunction = oldInFunc;
+
+  this.validateFunctionBody(node, true);
+};
+
+// ACHTUNG! must unwind state after calling if null returned
+
+pp.maybeParseNamedArrow = function (isStatement) {
+  let node = this.startNode();
+  this.initFunction(node);
+
+  if (this.isContextual("async")) return null;
+  node.id = this.parseIdentifier(false);
+
+  if (!this.match(tt.parenL)) return null;
+
+  // don't allow space between identifier and paren
+  // TODO: reconsider
+  if (this.state.pos - node.id.end > 1) return null;
+
+  try {
+    this.parseFunctionParams(node);
+  } catch (err) {
+    return null;
+  }
+
+  if (!this.match(tt.arrow)) return null;
+  this.parseArrowType(node);
+
+  this.parseArrowFunctionBody(node);
+
+  return this.finishNode(node, isStatement ? "NamedArrowDeclaration" : "NamedArrowExpression");
+};
+
+pp.parseNamedArrowFromCallExpresssion = function (node, call) {
+  this.initFunction(node);
+  node.params = this.toAssignableList(call.arguments, true, "named arrow function parameters");
+  if (call.typeParameters) node.typeParameters = call.typeParameters;
+
+  let isMember;
+  if (call.callee.type === "Identifier") {
+    node.id = call.callee;
+    isMember = false;
+  } else if (call.callee.type === "MemberExpression") {
+    node.id = call.callee.property;
+    node.object = call.callee.object;
+    isMember = true;
+  } else {
+    this.unexpected();
+  }
+
+  if (this.match(tt.colon)) {
+    const oldNoAnonFunctionType = this.state.noAnonFunctionType;
+    this.state.noAnonFunctionType = true;
+    node.returnType = this.flowParseTypeAnnotation();
+    this.state.noAnonFunctionType = oldNoAnonFunctionType;
+  }
+  if (this.canInsertSemicolon()) this.unexpected();
+
+  this.check(tt.arrow);
+  this.parseArrowType(node);
+  this.parseArrowFunctionBody(node);
+
+  // may be later rewritten as "NamedArrowDeclaration" in parseStatement
+  return this.finishNode(node, isMember ? "NamedArrowMemberExpression" : "NamedArrowExpression");
 };
 
 

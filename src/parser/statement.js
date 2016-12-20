@@ -141,6 +141,12 @@ pp.parseStatement = function (declaration, topLevel) {
     return this.finishNode(node, "VariableDeclaration");
   }
 
+  // rewrite standalone NamedArrowExpression as NamedArrowDeclaration
+  if (this.hasPlugin("lightscript") && expr.type === "NamedArrowExpression") {
+    node = expr;
+    return this.finishNode(node, "NamedArrowDeclaration");
+  }
+
   if (starttype === tt.name && expr.type === "Identifier" && this.eat(tt.colon)) {
     node = this.parseLabeledStatement(node, maybeName, expr);
 
@@ -778,6 +784,11 @@ pp.parseClassBody = function (node) {
     }
 
     this.parseClassMethod(classBody, method, isGenerator, isAsync);
+
+    // handle -get> and -set> arrow types
+    if (this.hasPlugin("lightscript") && !isGetSet) {
+      if (method.kind === "get" || method.kind === "set") isGetSet = true;
+    }
 
     // get methods aren't allowed to have any parameters
     // set methods must have exactly 1 parameter

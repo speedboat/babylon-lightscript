@@ -381,6 +381,35 @@ export default class Tokenizer {
       return this.finishOp(tt.incDec, 2);
     }
 
+    // lightscript '->'
+    // TODO: dedup w/ fat
+    if (this.hasPlugin("lightscript") && code === 45) {
+      if (next === 62) {
+        this.state.pos += 2;
+        return this.finishToken(tt.arrow, "->");
+      }
+      let next2 = this.input.charCodeAt(this.state.pos + 2);
+      if (next === 47 && next2 === 62) {
+        this.state.pos += 3;
+        return this.finishToken(tt.arrow, "-/>");
+      }
+      if (next === 42 && next2 === 62) {
+        this.state.pos += 3;
+        return this.finishToken(tt.arrow, "-*>");
+      }
+
+      let getOrSet;
+      if (next === 103) getOrSet = "get";
+      if (next === 115) getOrSet = "set";
+      if (getOrSet && next2 === 101 &&
+        this.input.charCodeAt(this.state.pos + 3) === 116 &&
+        this.input.charCodeAt(this.state.pos + 4) === 62
+      ) {
+        this.state.pos += 5;
+        return this.finishToken(tt.arrow, `-${getOrSet}>`);
+      }
+    }
+
     if (next === 61) {
       return this.finishOp(tt.assign, 2);
     } else {
@@ -417,10 +446,31 @@ export default class Tokenizer {
   readToken_eq_excl(code) { // '=!'
     let next = this.input.charCodeAt(this.state.pos + 1);
     if (next === 61) return this.finishOp(tt.equality, this.input.charCodeAt(this.state.pos + 2) === 61 ? 3 : 2);
+
+    // lightscript '=>'
+    // TODO: dedup w/ skinny
+    if (this.hasPlugin("lightscript") && code === 61) {
+      if (next === 62) {
+        this.state.pos += 2;
+        return this.finishToken(tt.arrow, "=>");
+      }
+
+      let next2 = this.input.charCodeAt(this.state.pos + 2);
+      if (next === 47 && next2 === 62) {
+        this.state.pos += 3;
+        return this.finishToken(tt.arrow, "=/>");
+      }
+      if (next === 42 && next2 === 62) {
+        this.state.pos += 3;
+        return this.finishToken(tt.arrow, "=*>");
+      }
+    }
+
     if (code === 61 && next === 62) { // '=>'
       this.state.pos += 2;
       return this.finishToken(tt.arrow);
     }
+
     return this.finishOp(code === 61 ? tt.eq : tt.prefix, 1);
   }
 
