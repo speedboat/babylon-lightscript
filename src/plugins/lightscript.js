@@ -186,12 +186,12 @@ pp.parseNumericLiteralMember = function () {
   } else if (numStr !== "0") {
     this.unexpected();
   }
-  let num = parseInt(numStr, 10);
+  const num = parseInt(numStr, 10);
 
   // must also remove "." from the "raw" property,
   // b/c that's what's inserted in code
 
-  let node = this.parseLiteral(num, "NumericLiteral");
+  const node = this.parseLiteral(num, "NumericLiteral");
   if (node.extra.raw.indexOf(".") === 0) {
     node.extra.raw = node.extra.raw.slice(1);
   } else {
@@ -204,7 +204,7 @@ pp.parseNumericLiteralMember = function () {
 // c/p parseBlock
 
 pp.parseWhiteBlock = function (allowDirectives?) {
-  let node = this.startNode(), indentLevel = this.state.indentLevel;
+  const node = this.startNode(), indentLevel = this.state.indentLevel;
 
   // TODO: also ->, =>, others?
   if (!this.eat(tt.colon)) this.unexpected();
@@ -234,12 +234,12 @@ pp.parseWhiteBlockBody = function (node, allowDirectives, indentLevel) {
       octalPosition = this.state.octalPosition;
     }
 
-    let stmt = this.parseStatement(true, false);
+    const stmt = this.parseStatement(true, false);
 
     if (allowDirectives && !parsedNonDirective &&
         stmt.type === "ExpressionStatement" && stmt.expression.type === "StringLiteral" &&
         !stmt.expression.extra.parenthesized) {
-      let directive = this.stmtToDirective(stmt);
+      const directive = this.stmtToDirective(stmt);
       node.directives.push(directive);
 
       if (oldStrict === undefined && directive.value.value === "use strict") {
@@ -262,6 +262,54 @@ pp.parseWhiteBlockBody = function (node, allowDirectives, indentLevel) {
     this.setStrict(false);
   }
 };
+
+pp.expectCommaOrLineBreak = function () {
+  // TODO: consider error message like "Missing comma or newline."
+  if (!(this.eat(tt.comma) || this.isLineBreak())) this.unexpected(null, tt.comma);
+};
+
+// lightscript only allows plain space (ascii-32), \r\n, and \n.
+// note that the space could appear within a string.
+
+pp.isWhitespaceAt = function (pos) {
+  const ch = this.state.input.charCodeAt(pos);
+  return (ch === 32 || ch === 13 || ch === 10);
+};
+
+pp.isNextCharWhitespace = function () {
+  return this.isWhitespaceAt(this.state.end);
+};
+
+// detect whether we're on a (non-indented) newline
+// relative to another position, eg;
+// x y -> false
+// x\ny -> true
+// x\n  y -> false
+
+pp.isNonIndentedBreakFrom = function (pos) {
+  const indentLevel = this.indentLevelAt(pos);
+  return this.isLineBreak() && this.state.indentLevel <= indentLevel;
+};
+
+// walk backwards til newline or start-of-file.
+// if two consecutive spaces are found together, increment indents.
+// if non-space found, reset indentation.
+
+pp.indentLevelAt = function (pos) {
+  let indents = 0;
+  while (pos > 0 && this.state.input[pos] !== "\n") {
+    if (this.state.input[pos--] === " ") {
+      if (this.state.input[pos] === " ") {
+        --pos;
+        ++indents;
+      }
+    } else {
+      indents = 0;
+    }
+  }
+  return indents;
+};
+
 
 export default function (instance) {
 

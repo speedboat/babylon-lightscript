@@ -719,7 +719,7 @@ pp.parseClassBody = function (node) {
 
   let isEnd;
   if (this.hasPlugin("lightscript") && this.match(tt.colon)) {
-    let indentLevel = this.state.indentLevel;
+    const indentLevel = this.state.indentLevel;
     this.next();
     isEnd = () => this.state.indentLevel <= indentLevel || this.match(tt.eof);
   } else {
