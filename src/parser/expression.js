@@ -215,6 +215,11 @@ pp.parseExprOps = function (noIn, refShorthandDefaultPos) {
 // operator that has a lower precedence than the set it is parsing.
 
 pp.parseExprOp = function(left, leftStartPos, leftStartLoc, minPrec, noIn) {
+  // disallow `1\n+1`, instead requiring `1+\n1`
+  // TODO: consider only enforcing for operators that could also be unaries
+  // or the regex start. (but I think consistency is better...)
+  if (this.hasPlugin("lightscript") && this.isLineBreak()) return left;
+
   let prec = this.state.type.binop;
   if (prec != null && (!noIn || !this.match(tt._in))) {
     if (prec > minPrec) {
@@ -345,14 +350,14 @@ pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
       node.property = this.parseNumericLiteralMember();
       node.computed = true;
       base = this.finishNode(node, "MemberExpression");
-    } else if (this.eat(tt.bracketL)) {
+    } else if (!(this.hasPlugin("lightscript") && this.isLineBreak()) && this.eat(tt.bracketL)) {
       let node = this.startNodeAt(startPos, startLoc);
       node.object = base;
       node.property = this.parseExpression();
       node.computed = true;
       this.expect(tt.bracketR);
       base = this.finishNode(node, "MemberExpression");
-    } else if (!noCalls && this.match(tt.parenL)) {
+    } else if (!noCalls && this.match(tt.parenL) && !(this.hasPlugin("lightscript") && this.isLineBreak())) {
       let possibleAsync = this.state.potentialArrowAt === base.start && base.type === "Identifier" && base.name === "async" && !this.canInsertSemicolon();
       this.next();
 
@@ -388,7 +393,11 @@ pp.parseCallExpressionArguments = function (close, possibleAsyncArrow) {
     if (first) {
       first = false;
     } else {
-      this.expect(tt.comma);
+      if (this.hasPlugin("lightscript")) {
+        this.expectCommaOrLineBreak();
+      } else {
+        this.expect(tt.comma);
+      }
       if (this.eat(close)) break;
     }
 
@@ -768,7 +777,11 @@ pp.parseObj = function (isPattern, refShorthandDefaultPos) {
     if (first) {
       first = false;
     } else {
-      this.expect(tt.comma);
+      if (this.hasPlugin("lightscript")) {
+        this.expectCommaOrLineBreak();
+      } else {
+        this.expect(tt.comma);
+      }
       if (this.eat(tt.braceR)) break;
     }
 
@@ -821,7 +834,7 @@ pp.parseObj = function (isPattern, refShorthandDefaultPos) {
       if (isGenerator) this.unexpected();
 
       let asyncId = this.parseIdentifier();
-      if (this.match(tt.colon) || this.match(tt.parenL) || this.match(tt.braceR) || this.match(tt.eq) || this.match(tt.comma)) {
+      if (this.match(tt.colon) || this.match(tt.parenL) || this.match(tt.braceR) || this.match(tt.eq) || this.match(tt.comma) || (this.hasPlugin("lightscript") && this.isLineBreak())) {
         prop.key = asyncId;
       } else {
         isAsync = true;
@@ -867,7 +880,7 @@ pp.parseObjPropValue = function (prop, startPos, startLoc, isGenerator, isAsync,
     return this.finishNode(prop, "ObjectProperty");
   }
 
-  if (!isPattern && !prop.computed && prop.key.type === "Identifier" && (prop.key.name === "get" || prop.key.name === "set") && (!this.match(tt.comma) && !this.match(tt.braceR))) {
+  if (!isPattern && !prop.computed && prop.key.type === "Identifier" && (prop.key.name === "get" || prop.key.name === "set") && (!this.match(tt.comma) && !this.match(tt.braceR) && !(this.hasPlugin("lightscript") && this.isLineBreak()))) {
     if (isGenerator || isAsync) this.unexpected();
     prop.kind = prop.key.name;
     this.parsePropertyName(prop);
@@ -1023,7 +1036,11 @@ pp.parseExprList = function (close, allowEmpty, refShorthandDefaultPos) {
     if (first) {
       first = false;
     } else {
-      this.expect(tt.comma);
+      if (this.hasPlugin("lightscript")) {
+        this.expectCommaOrLineBreak();
+      } else {
+        this.expect(tt.comma);
+      }
       if (this.eat(close)) break;
     }
 

@@ -413,6 +413,12 @@ pp.parseWhiteBlockBody = function (node, allowDirectives, indentLevel) {
   }
 };
 
+pp.expectCommaOrLineBreak = function () {
+  // TODO: consider error message like "Missing comma or newline."
+  if (!(this.eat(tt.comma) || this.isLineBreak())) this.unexpected(null, tt.comma);
+};
+
+
 export default function (instance) {
 
   // if, switch, while, with --> don't need no stinkin' parens no more

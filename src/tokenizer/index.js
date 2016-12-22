@@ -202,7 +202,7 @@ export default class Tokenizer {
   // whitespace and comments, and.
 
   skipSpace() {
-    let isNewLine = false;
+    let isNewLine = false;  // for lightscript
     loop: while (this.state.pos < this.input.length) {
       let ch = this.input.charCodeAt(this.state.pos);
       switch (ch) {
@@ -233,8 +233,18 @@ export default class Tokenizer {
           ++this.state.pos;
           ++this.state.curLine;
           this.state.lineStart = this.state.pos;
-          isNewLine = true;
-          this.state.indentLevel = 0;
+          if (this.hasPlugin("lightscript")) {
+            isNewLine = true;
+            this.state.indentLevel = 0;
+
+            // allow regexp literal after newline instead of division (for ASI)
+            // (without breaking jsx, eg; `<a\n/>`)
+            if (this.hasPlugin("jsx") && !this.state.exprAllowed) {
+              this.state.exprAllowed = this.curContext() === ct.j_expr;
+            } else {
+              this.state.exprAllowed = true;
+            }
+          }
           break;
 
         case 47: // '/'
