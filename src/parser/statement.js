@@ -149,7 +149,9 @@ pp.takeDecorators = function (node) {
 
 pp.parseDecorators = function (allowExport) {
   while (this.match(tt.at)) {
-    this.state.decorators.push(this.parseDecorator());
+    const decorator = this.parseDecorator();
+    // https://github.com/babel/babylon/pull/262
+    this.state.decorators.push(decorator);
   }
 
   if (allowExport && this.match(tt._export)) {
