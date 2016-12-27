@@ -81,6 +81,7 @@ pp.isTypedColonConst = function (decl) {
 // for i from x
 // for i, x from y
 // for 0 til 10
+// for zero til ten
 // for i from 0 til 10
 // for let i = 0; i < len; i++
 
@@ -114,6 +115,9 @@ pp.parseParenFreeForStatement = function (node, inComprehension = false) {
     } else if (type === tt.comma || value === "from") {
       // for-from-array
       init = this.parseIdentifier();
+    } else if (value === "til") {
+      // for-til with identifiers instead of numbers
+      init = this.parseIdentifier();
     } else {
       // might be destructured auto-const with for-of
       // (handle separately from name b/c perf and unified with for-in)
@@ -127,8 +131,14 @@ pp.parseParenFreeForStatement = function (node, inComprehension = false) {
         init.declarations = [id];
         this.finishNode(init, "VariableDeclaration");
       } else {
-        this.state = state;
-        this.unexpected();
+        // for-til with an expression instead of identifier or number
+        // TODO: consider dropping support for this, enforcing either number or variable...
+        this.state = state; state = this.state.clone();
+        init = this.parseExpression();
+        if (!this.match(tt._til)) {
+          this.state = state;
+          this.unexpected();
+        }
       }
     }
   } else {
