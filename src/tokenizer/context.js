@@ -27,6 +27,7 @@ export class TokContext {
 export const types: {
   [key: string]: TokContext;
 } = {
+  binop: new TokContext("binop", true),
   braceStatement: new TokContext("{", false),
   braceExpression: new TokContext("{", true),
   templateQuasi: new TokContext("${", true),

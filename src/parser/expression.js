@@ -20,6 +20,7 @@
 // [opp]: http://en.wikipedia.org/wiki/Operator-precedence_parser
 
 import { types as tt } from "../tokenizer/types";
+import { types as tc } from "../tokenizer/context";
 import Parser from "./index";
 import { reservedWords } from "../util/identifier";
 
@@ -215,10 +216,23 @@ pp.parseExprOps = function (noIn, refShorthandDefaultPos) {
 // operator that has a lower precedence than the set it is parsing.
 
 pp.parseExprOp = function(left, leftStartPos, leftStartLoc, minPrec, noIn) {
-  // disallow `1\n+1`, instead requiring `1+\n1`
-  // TODO: consider only enforcing for operators that could also be unaries
-  // or the regex start. (but I think consistency is better...)
-  if (this.hasPlugin("lightscript") && this.isLineBreak()) return left;
+
+  // disallow `1\n+1`, instead requiring `1+\n1` or `1\n  +1`
+  // TODO: test more thoroughly with mixed-precedent, mixed-indentation
+  if (this.hasPlugin("lightscript") && this.isNonIndentedBreakFrom(leftStartPos)) {
+
+    // regex/vs/division disambiguation is a real pain...
+    // when a dedent is found that ends binops, I simply rewind the tt.slash
+    // and replace it with a tt.regex... arguably the dirtiest hack in lightscript so far,
+    // but it's the best I could come up with after much searching/fiddling.
+    // TODO: test more thoroughly!!!
+    if (this.match(tt.slash) && this.curContext() !== tc.binop) {
+      this.state.tokens.pop();
+      this.readRegexp();
+    }
+
+    return left;
+  }
 
   let prec = this.state.type.binop;
   if (prec != null && (!noIn || !this.match(tt._in))) {
@@ -243,9 +257,11 @@ pp.parseExprOp = function(left, leftStartPos, leftStartLoc, minPrec, noIn) {
       let op = this.state.type;
       this.next();
 
+      if (this.hasPlugin("lightscript")) this.state.context.push(tc.binop);
       let startPos = this.state.start;
       let startLoc = this.state.startLoc;
       node.right = this.parseExprOp(this.parseMaybeUnary(), startPos, startLoc, op.rightAssociative ? prec - 1 : prec, noIn);
+      if (this.hasPlugin("lightscript")) this.state.context.pop();
 
       this.finishNode(node, (op === tt.logicalOR || op === tt.logicalAND) ? "LogicalExpression" : "BinaryExpression");
       return this.parseExprOp(node, leftStartPos, leftStartLoc, minPrec, noIn);
@@ -350,7 +366,7 @@ pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
       node.property = this.parseNumericLiteralMember();
       node.computed = true;
       base = this.finishNode(node, "MemberExpression");
-    } else if (!(this.hasPlugin("lightscript") && this.isLineBreak()) && this.eat(tt.bracketL)) {
+    } else if (!(this.hasPlugin("lightscript") && this.isNonIndentedBreakFrom(startPos)) && this.eat(tt.bracketL)) {
       let node = this.startNodeAt(startPos, startLoc);
       node.object = base;
       node.property = this.parseExpression();

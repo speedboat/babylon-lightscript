@@ -75,38 +75,25 @@
           }
         },
         "expression": {
-          "type": "ArrayExpression",
-          "start": 4,
-          "end": 7,
+          "type": "Identifier",
+          "start": 5,
+          "end": 6,
           "loc": {
             "start": {
               "line": 2,
-              "column": 2
+              "column": 3
             },
             "end": {
               "line": 2,
-              "column": 5
-            }
+              "column": 4
+            },
+            "identifierName": "b"
           },
-          "elements": [
-            {
-              "type": "Identifier",
-              "start": 5,
-              "end": 6,
-              "loc": {
-                "start": {
-                  "line": 2,
-                  "column": 3
-                },
-                "end": {
-                  "line": 2,
-                  "column": 4
-                },
-                "identifierName": "b"
-              },
-              "name": "b"
-            }
-          ]
+          "name": "b",
+          "extra": {
+            "parenthesized": true,
+            "parenStart": 4
+          }
         }
       }
     ],

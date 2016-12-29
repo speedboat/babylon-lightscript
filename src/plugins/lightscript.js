@@ -418,6 +418,36 @@ pp.expectCommaOrLineBreak = function () {
   if (!(this.eat(tt.comma) || this.isLineBreak())) this.unexpected(null, tt.comma);
 };
 
+// detect whether we're on a (non-indented) newline
+// relative to another position, eg;
+// x y -> false
+// x\ny -> true
+// x\n  y -> false
+
+pp.isNonIndentedBreakFrom = function (pos) {
+  let indentLevel = this.indentLevelAt(pos);
+  return this.isLineBreak() && this.state.indentLevel <= indentLevel;
+};
+
+// walk backwards til newline or start-of-file.
+// if two consecutive spaces are found together, increment indents.
+// if non-space found, reset indentation.
+
+pp.indentLevelAt = function (pos) {
+  let indents = 0;
+  while (pos > 0 && this.state.input[pos] !== "\n") {
+    if (this.state.input[pos--] === " ") {
+      if (this.state.input[pos] === " ") {
+        --pos;
+        ++indents;
+      }
+    } else {
+      indents = 0;
+    }
+  }
+  return indents;
+};
+
 
 export default function (instance) {
 

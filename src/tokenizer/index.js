@@ -229,7 +229,11 @@ export default class Tokenizer {
             ++this.state.pos;
           }
 
-        case 10: case 8232: case 8233:
+        case 8232: case 8233:
+          if (this.hasPlugin("lightscript") && ch !== 13) {
+            this.unexpected(null, "Only '\\n' and '\\r\\n' are legal newlines in lightscript.");
+          }
+        case 10:
           ++this.state.pos;
           ++this.state.curLine;
           this.state.lineStart = this.state.pos;
@@ -240,7 +244,9 @@ export default class Tokenizer {
             // allow regexp literal after newline instead of division (for ASI)
             // (without breaking jsx, eg; `<a\n/>`)
             if (this.hasPlugin("jsx") && !this.state.exprAllowed) {
-              this.state.exprAllowed = this.curContext() === ct.j_expr;
+              this.state.exprAllowed =
+                this.curContext() !== ct.j_oTag &&
+                this.curContext() !== ct.j_cTag;
             } else {
               this.state.exprAllowed = true;
             }
