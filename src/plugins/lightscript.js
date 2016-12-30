@@ -418,6 +418,18 @@ pp.expectCommaOrLineBreak = function () {
   if (!(this.eat(tt.comma) || this.isLineBreak())) this.unexpected(null, tt.comma);
 };
 
+// lightscript only allows plain space (ascii-32), \r\n, and \n.
+// note that the space could appear within a string.
+
+pp.isWhitespaceAt = function (pos) {
+  let ch = this.state.input.charCodeAt(pos);
+  return (ch === 32 || ch === 13 || ch === 10);
+};
+
+pp.isNextCharWhitespace = function () {
+  return this.isWhitespaceAt(this.state.end);
+};
+
 // detect whether we're on a (non-indented) newline
 // relative to another position, eg;
 // x y -> false

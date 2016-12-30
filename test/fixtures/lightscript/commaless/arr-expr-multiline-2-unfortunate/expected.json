@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 16,
+  "end": 17,
   "loc": {
     "start": {
       "line": 1,
@@ -15,7 +15,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 16,
+    "end": 17,
     "loc": {
       "start": {
         "line": 1,
@@ -31,7 +31,7 @@
       {
         "type": "ExpressionStatement",
         "start": 0,
-        "end": 16,
+        "end": 17,
         "loc": {
           "start": {
             "line": 1,
@@ -45,7 +45,7 @@
         "expression": {
           "type": "ArrayExpression",
           "start": 0,
-          "end": 16,
+          "end": 17,
           "loc": {
             "start": {
               "line": 1,
@@ -58,53 +58,31 @@
           },
           "elements": [
             {
-              "type": "NumericLiteral",
+              "type": "BinaryExpression",
               "start": 4,
-              "end": 5,
+              "end": 11,
               "loc": {
                 "start": {
                   "line": 2,
                   "column": 2
                 },
                 "end": {
-                  "line": 2,
-                  "column": 3
+                  "line": 3,
+                  "column": 5
                 }
               },
-              "extra": {
-                "rawValue": 1,
-                "raw": "1"
-              },
-              "value": 1
-            },
-            {
-              "type": "UnaryExpression",
-              "start": 8,
-              "end": 10,
-              "loc": {
-                "start": {
-                  "line": 3,
-                  "column": 2
-                },
-                "end": {
-                  "line": 3,
-                  "column": 4
-                }
-              },
-              "operator": "+",
-              "prefix": true,
-              "argument": {
+              "left": {
                 "type": "NumericLiteral",
-                "start": 9,
-                "end": 10,
+                "start": 4,
+                "end": 5,
                 "loc": {
                   "start": {
-                    "line": 3,
-                    "column": 3
+                    "line": 2,
+                    "column": 2
                   },
                   "end": {
-                    "line": 3,
-                    "column": 4
+                    "line": 2,
+                    "column": 3
                   }
                 },
                 "extra": {
@@ -113,14 +91,32 @@
                 },
                 "value": 1
               },
-              "extra": {
-                "parenthesizedArgument": false
+              "operator": "+",
+              "right": {
+                "type": "NumericLiteral",
+                "start": 10,
+                "end": 11,
+                "loc": {
+                  "start": {
+                    "line": 3,
+                    "column": 4
+                  },
+                  "end": {
+                    "line": 3,
+                    "column": 5
+                  }
+                },
+                "extra": {
+                  "rawValue": 1,
+                  "raw": "1"
+                },
+                "value": 1
               }
             },
             {
               "type": "NumericLiteral",
-              "start": 13,
-              "end": 14,
+              "start": 14,
+              "end": 15,
               "loc": {
                 "start": {
                   "line": 4,

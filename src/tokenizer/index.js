@@ -240,16 +240,6 @@ export default class Tokenizer {
           if (this.hasPlugin("lightscript")) {
             isNewLine = true;
             this.state.indentLevel = 0;
-
-            // allow regexp literal after newline instead of division (for ASI)
-            // (without breaking jsx, eg; `<a\n/>`)
-            if (this.hasPlugin("jsx") && !this.state.exprAllowed) {
-              this.state.exprAllowed =
-                this.curContext() !== ct.j_oTag &&
-                this.curContext() !== ct.j_cTag;
-            } else {
-              this.state.exprAllowed = true;
-            }
           }
           break;
 
@@ -320,7 +310,16 @@ export default class Tokenizer {
   }
 
   readToken_slash() { // '/'
-    if (this.state.exprAllowed) {
+    let looksLikeRegex = this.hasPlugin("lightscript") &&
+      this.isLineBreak() &&
+      !this.isWhitespaceAt(this.state.pos + 1) &&
+      // if parsing jsx, allow `/>` etc.
+      (!this.hasPlugin("jsx") || (
+        this.curContext() !== ct.j_oTag &&
+        this.curContext() !== ct.j_cTag
+      ));
+
+    if (this.state.exprAllowed || looksLikeRegex) {
       ++this.state.pos;
       return this.readRegexp();
     }
@@ -529,11 +528,21 @@ export default class Tokenizer {
 
   readRegexp() {
     let escaped, inClass, start = this.state.pos;
+
+    if (this.hasPlugin("lightscript") && this.input.charCodeAt(start) === 32) {
+      this.raise(start, "Regex literals cannot start with a space in lightscript; try '\\s' or '\\ ' instead.");
+    }
+
+    // for lightscript, exprAllowed logic may have been overriden; possibly confusing, try to clarify.
+    let unterminatedErrMsg = !this.state.exprAllowed
+      ? "Unterminated regular expression (if you wanted division, add a space after the '/')."
+      : "Unterminated regular expression";
+
     for (;;) {
-      if (this.state.pos >= this.input.length) this.raise(start, "Unterminated regular expression");
+      if (this.state.pos >= this.input.length) this.raise(start, unterminatedErrMsg);
       let ch = this.input.charAt(this.state.pos);
       if (lineBreak.test(ch)) {
-        this.raise(start, "Unterminated regular expression");
+        this.raise(start, unterminatedErrMsg);
       }
       if (escaped) {
         escaped = false;
