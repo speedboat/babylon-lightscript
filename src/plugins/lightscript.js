@@ -264,16 +264,11 @@ pp.parseForFrom = function (node, init, inComprehension) {
 
 // [for ...: stmnt]
 
-pp.parseArrayComprehension = function () {
-  let node = this.startNode();
-  this.next();
-
+pp.parseArrayComprehension = function (node) {
   let loop = this.startNode();
   this.next();
   node.loop = this.parseParenFreeForStatement(loop, true);
-
   this.expect(tt.bracketR);
-
   return this.finishNode(node, "ArrayComprehension");
 };
 
@@ -312,54 +307,14 @@ pp.parseComprehensionExpressionStatement = function (node, expr) {
 
 export default function (instance) {
 
-  // check for array comprehension
-
-  instance.extend("parseExprAtom", function (inner) {
-    return function () {
-      // must start with `[` `for`
-      if (this.state.type === tt.bracketL && this.lookahead().type === tt._for) {
-        return this.parseArrayComprehension();
-      }
-      return inner.apply(this, arguments);
-    };
-  });
-
   // if, switch, while, with --> don't need no stinkin' parens no more
 
   instance.extend("parseParenExpression", function (inner) {
     return function () {
       if (this.match(tt.parenL)) return inner.apply(this, arguments);
-
       let val = this.parseExpression();
-
       this.expectParenFreeBlockStart();
-
       return val;
-    };
-  });
-
-  // do-while can't use the above-defined parseParenExpression
-  // b/c it expects a trailing colon or brace, which you don't have here.
-
-  instance.extend("parseDoStatement", function () {
-    return function (node) {
-      this.next();
-      this.state.labels.push(loopLabel);
-      node.body = this.parseStatement(false);
-      this.state.labels.pop();
-      this.expect(tt._while);
-
-      // allow parens; if not used, enforce semicolon or newline.
-      if (this.eat(tt.parenL)) {
-        node.test = this.parseExpression();
-        this.expect(tt.parenR);
-        this.eat(tt.semi);
-      } else {
-        node.test = this.parseExpression();
-        this.semicolon();
-      }
-
-      return this.finishNode(node, "DoWhileStatement");
     };
   });
 

@@ -228,8 +228,25 @@ pp.parseDoStatement = function (node) {
   node.body = this.parseStatement(false);
   this.state.labels.pop();
   this.expect(tt._while);
-  node.test = this.parseParenExpression();
-  this.eat(tt.semi);
+
+  // do-while can't use the lightscript-defined parseParenExpression
+  // b/c it expects a trailing colon or brace, which you don't have here.
+
+  if (this.hasPlugin("lightscript")) {
+    // allow parens; if not used, enforce semicolon or newline.
+    if (this.eat(tt.parenL)) {
+      node.test = this.parseExpression();
+      this.expect(tt.parenR);
+      this.eat(tt.semi);
+    } else {
+      node.test = this.parseExpression();
+      this.semicolon();
+    }
+  } else {
+    node.test = this.parseParenExpression();
+    this.eat(tt.semi);
+  }
+
   return this.finishNode(node, "DoWhileStatement");
 };
 
