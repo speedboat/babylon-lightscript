@@ -203,11 +203,14 @@ pp.parseNumericLiteralMember = function () {
 
 // c/p parseBlock
 
-pp.parseWhiteBlock = function (allowDirectives?) {
+pp.parseWhiteBlock = function (allowDirectives?, isIfExpression?) {
   const node = this.startNode(), indentLevel = this.state.indentLevel;
 
   // must start with colon or arrow
-  if (this.eat(tt.colon)) {
+  if (isIfExpression) {
+    this.expect(tt.colon);
+    if (!this.isLineTerminator()) return this.parseMaybeAssign();
+  } else if (this.eat(tt.colon)) {
     if (!this.isLineTerminator()) return this.parseStatement(false);
   } else if (this.eat(tt.arrow)) {
     if (!this.isLineTerminator()) return this.parseMaybeAssign();
@@ -439,6 +442,25 @@ pp.parseNamedArrowFromCallExpression = function (node, call) {
 
   // may be later rewritten as "NamedArrowDeclaration" in parseStatement
   return this.finishNode(node, isMember ? "NamedArrowMemberExpression" : "NamedArrowExpression");
+};
+
+// c/p parseIfStatement
+
+pp.parseIfExpression = function (node) {
+  this.next();
+  node.test = this.parseExpression();
+  node.consequent = this.parseWhiteBlock(false, true);
+
+  if (this.match(tt._elif)) {
+    node.alternate = this.parseIfExpression(this.startNode());
+  } else if (this.eat(tt._else)) {
+    node.alternate = this.match(tt._if) ?
+      this.parseIfExpression(this.startNode()) :
+      this.parseWhiteBlock(false, true);
+  } else {
+    node.alternate = null;
+  }
+  return this.finishNode(node, "IfExpression");
 };
 
 

@@ -626,6 +626,12 @@ pp.parseExprAtom = function (refShorthandDefaultPos) {
         this.raise(callee.start, "Binding should be performed on object property.");
       }
 
+    case tt._if:
+      if (this.hasPlugin("lightscript")) {
+        node = this.startNode();
+        return this.parseIfExpression(node);
+      }
+
     default:
       this.unexpected();
   }
