@@ -110,7 +110,6 @@
               "async": false,
               "params": [],
               "skinny": true,
-              "white": true,
               "body": {
                 "type": "Identifier",
                 "start": 12,

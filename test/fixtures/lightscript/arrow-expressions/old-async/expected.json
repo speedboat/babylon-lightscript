@@ -62,7 +62,6 @@
           "async": true,
           "params": [],
           "skinny": false,
-          "white": true,
           "body": {
             "type": "AwaitExpression",
             "start": 12,

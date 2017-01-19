@@ -109,7 +109,10 @@
               }
             }
           ],
-          "directives": []
+          "directives": [],
+          "extra": {
+            "curly": false
+          }
         },
         "alternate": {
           "type": "IfStatement",
@@ -192,7 +195,10 @@
                 }
               }
             ],
-            "directives": []
+            "directives": [],
+            "extra": {
+              "curly": false
+            }
           },
           "alternate": null
         }

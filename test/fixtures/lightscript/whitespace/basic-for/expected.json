@@ -311,7 +311,10 @@
               }
             }
           ],
-          "directives": []
+          "directives": [],
+          "extra": {
+            "curly": false
+          }
         }
       }
     ],

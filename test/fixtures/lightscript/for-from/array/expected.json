@@ -59,6 +59,7 @@
           },
           "name": "i"
         },
+        "elem": null,
         "array": {
           "type": "Identifier",
           "start": 11,
@@ -91,7 +92,10 @@
             }
           },
           "body": [],
-          "directives": []
+          "directives": [],
+          "extra": {
+            "curly": true
+          }
         }
       }
     ],

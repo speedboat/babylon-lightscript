@@ -131,7 +131,10 @@
             }
           },
           "body": [],
-          "directives": []
+          "directives": [],
+          "extra": {
+            "curly": true
+          }
         }
       }
     ],

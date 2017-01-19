@@ -95,7 +95,6 @@
             "name": "o"
           },
           "skinny": true,
-          "white": true,
           "body": {
             "type": "Identifier",
             "start": 9,

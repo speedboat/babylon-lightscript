@@ -115,7 +115,6 @@
               "async": false,
               "params": [],
               "skinny": false,
-              "white": true,
               "body": {
                 "type": "Identifier",
                 "start": 24,

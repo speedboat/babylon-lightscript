@@ -165,7 +165,6 @@
           }
         ],
         "skinny": true,
-        "white": true,
         "body": {
           "type": "Identifier",
           "start": 16,

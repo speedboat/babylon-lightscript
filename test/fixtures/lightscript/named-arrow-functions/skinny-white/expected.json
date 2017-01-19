@@ -64,7 +64,6 @@
         "async": false,
         "params": [],
         "skinny": true,
-        "white": true,
         "body": {
           "type": "BlockStatement",
           "start": 5,
@@ -113,7 +112,10 @@
               }
             }
           ],
-          "directives": []
+          "directives": [],
+          "extra": {
+            "curly": false
+          }
         }
       }
     ],

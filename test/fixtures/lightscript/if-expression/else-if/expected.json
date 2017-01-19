@@ -155,7 +155,10 @@
                   }
                 }
               ],
-              "directives": []
+              "directives": [],
+              "extra": {
+                "curly": false
+              }
             },
             "alternate": {
               "type": "IfExpression",
@@ -238,7 +241,10 @@
                     }
                   }
                 ],
-                "directives": []
+                "directives": [],
+                "extra": {
+                  "curly": false
+                }
               },
               "alternate": null
             }

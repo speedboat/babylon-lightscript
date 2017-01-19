@@ -227,7 +227,6 @@
           }
         ],
         "skinny": false,
-        "white": true,
         "body": {
           "type": "NumericLiteral",
           "start": 42,

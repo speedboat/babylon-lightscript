@@ -357,7 +357,10 @@
                         }
                       }
                     ],
-                    "directives": []
+                    "directives": [],
+                    "extra": {
+                      "curly": true
+                    }
                   },
                   "alternate": {
                     "type": "BlockStatement",
@@ -407,11 +410,17 @@
                         }
                       }
                     ],
-                    "directives": []
+                    "directives": [],
+                    "extra": {
+                      "curly": true
+                    }
                   }
                 }
               ],
-              "directives": []
+              "directives": [],
+              "extra": {
+                "curly": true
+              }
             }
           }
         }

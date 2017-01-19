@@ -94,7 +94,13 @@ pp.parseStatement = function (declaration, topLevel) {
 
     case tt._while: return this.parseWhileStatement(node);
     case tt._with: return this.parseWithStatement(node);
-    case tt.braceL: return this.parseBlock();
+    case tt.braceL:
+      // in lightscript, allow line-starting `{` to be parsed as obj or obj pattern
+      if (this.hasPlugin("lightscript") && this.isLineBreak()) {
+        break;
+      } else {
+        return this.parseBlock();
+      }
     case tt.semi: return this.parseEmptyStatement(node);
     case tt._export:
     case tt._import:
@@ -548,7 +554,14 @@ pp.parseBlockBody = function (node, allowDirectives, topLevel, end) {
   let oldStrict;
   let octalPosition;
 
-  while (!this.eat(end)) {
+  let isEnd;
+  if (this.hasPlugin("lightscript") && typeof end === "number") {
+    isEnd = () => this.state.indentLevel <= end || this.match(tt.eof);
+  } else {
+    isEnd = () => this.eat(end);
+  }
+
+  while (!isEnd()) {
     if (!parsedNonDirective && this.state.containsOctal && !octalPosition) {
       octalPosition = this.state.octalPosition;
     }

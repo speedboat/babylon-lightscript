@@ -209,7 +209,10 @@
               ]
             }
           ],
-          "directives": []
+          "directives": [],
+          "extra": {
+            "curly": false
+          }
         },
         "alternate": null
       }

@@ -131,7 +131,6 @@
               "async": false,
               "params": [],
               "skinny": true,
-              "white": true,
               "body": {
                 "type": "NumericLiteral",
                 "start": 28,

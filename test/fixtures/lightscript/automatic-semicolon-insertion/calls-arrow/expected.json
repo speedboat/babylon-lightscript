@@ -112,7 +112,6 @@
             }
           ],
           "skinny": false,
-          "white": true,
           "body": {
             "type": "Identifier",
             "start": 9,

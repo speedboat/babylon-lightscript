@@ -107,6 +107,7 @@
               },
               "value": 0
             },
+            "inclusive": false,
             "rangeEnd": {
               "type": "NumericLiteral",
               "start": 18,
@@ -175,7 +176,10 @@
                   }
                 }
               ],
-              "directives": []
+              "directives": [],
+              "extra": {
+                "curly": true
+              }
             }
           }
         }

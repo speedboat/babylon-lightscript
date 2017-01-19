@@ -134,7 +134,6 @@
           }
         ],
         "skinny": true,
-        "white": true,
         "body": {
           "type": "BlockStatement",
           "start": 13,
@@ -183,7 +182,10 @@
               }
             }
           ],
-          "directives": []
+          "directives": [],
+          "extra": {
+            "curly": false
+          }
         }
       }
     ],

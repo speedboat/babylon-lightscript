@@ -209,63 +209,32 @@ pp.parseWhiteBlock = function (allowDirectives?, isIfExpression?) {
   // must start with colon or arrow
   if (isIfExpression) {
     this.expect(tt.colon);
-    if (!this.isLineTerminator()) return this.parseMaybeAssign();
+    // TODO: allow braces
+    if (!this.isLineBreak()) return this.parseMaybeAssign();
   } else if (this.eat(tt.colon)) {
-    if (!this.isLineTerminator()) return this.parseStatement(false);
+    if (!this.isLineBreak()) return this.parseStatement(false);
   } else if (this.eat(tt.arrow)) {
-    if (!this.isLineTerminator()) return this.parseMaybeAssign();
+    if (!this.isLineBreak()) {
+      if (this.match(tt.braceL)) {
+        // restart node at brace start instead of arrow start
+        const node = this.startNode();
+        this.next();
+        this.parseBlockBody(node, allowDirectives, false, tt.braceR);
+        this.addExtra(node, "curly", true);
+        return this.finishNode(node, "BlockStatement");
+      } else {
+        return this.parseMaybeAssign();
+      }
+    }
   } else {
     this.unexpected(null, "Whitespace Block must start with a colon or arrow");
   }
 
-  this.parseWhiteBlockBody(node, allowDirectives, indentLevel);
+  this.parseBlockBody(node, allowDirectives, false, indentLevel);
+  this.addExtra(node, "curly", false);
   if (!node.body.length) this.unexpected(node.start, "Expected an Indent or Statement");
 
   return this.finishNode(node, "BlockStatement");
-};
-
-// c/p parseBlockBody, but indentLevel instead of end (and no topLevel)
-
-pp.parseWhiteBlockBody = function (node, allowDirectives, indentLevel) {
-  node.body = [];
-  node.directives = [];
-
-  let parsedNonDirective = false;
-  let oldStrict;
-  let octalPosition;
-
-  while (this.state.indentLevel > indentLevel && !this.match(tt.eof)) {
-    if (!parsedNonDirective && this.state.containsOctal && !octalPosition) {
-      octalPosition = this.state.octalPosition;
-    }
-
-    const stmt = this.parseStatement(true, false);
-
-    if (allowDirectives && !parsedNonDirective &&
-        stmt.type === "ExpressionStatement" && stmt.expression.type === "StringLiteral" &&
-        !stmt.expression.extra.parenthesized) {
-      const directive = this.stmtToDirective(stmt);
-      node.directives.push(directive);
-
-      if (oldStrict === undefined && directive.value.value === "use strict") {
-        oldStrict = this.state.strict;
-        this.setStrict(true);
-
-        if (octalPosition) {
-          this.raise(octalPosition, "Octal literal in strict mode");
-        }
-      }
-
-      continue;
-    }
-
-    parsedNonDirective = true;
-    node.body.push(stmt);
-  }
-
-  if (oldStrict === false) {
-    this.setStrict(false);
-  }
 };
 
 pp.expectCommaOrLineBreak = function () {
@@ -390,17 +359,9 @@ pp.parseArrowFunctionBody = function (node) {
   this.state.labels = [];
   this.state.inFunction = true;
 
-
-  if (this.lookahead().type === tt.braceL) {
-    this.next();
-    node.white = false;
-    node.body = this.parseBlock(true);
-  } else {
-    node.white = true;
-    node.body = this.parseWhiteBlock(true);
-    if (node.body.type !== "BlockStatement") {
-      node.expression = true;
-    }
+  node.body = this.parseWhiteBlock(true);
+  if (node.body.type !== "BlockStatement") {
+    node.expression = true;
   }
 
   this.state.inAsync = oldInAsync;
@@ -477,25 +438,6 @@ export default function (instance) {
     };
   });
 
-  // if exporting an implicit-const, don't parse as default.
-
-  instance.extend("parseStatement", function (inner) {
-    return function () {
-      if (this.match(tt.braceL)) {
-        const state = this.state.clone();
-        const node = this.startNode();
-
-        const id = this.maybeParseColonConstId();
-        if (id) {
-          return this.parseColonEq(node, id);
-        } else {
-          this.state = state;
-        }
-      }
-      return inner.apply(this, arguments);
-    };
-  });
-
   // `export` is the only time `:=` can be preceded by a newline.
 
   instance.extend("parseExport", function (inner) {
@@ -536,7 +478,9 @@ export default function (instance) {
       if (this.match(tt.colon)) {
         return this.parseWhiteBlock(allowDirectives);
       }
-      return inner.apply(this, arguments);
+      const block = inner.apply(this, arguments);
+      this.addExtra(block, "curly", true);
+      return block;
     };
   });
 }

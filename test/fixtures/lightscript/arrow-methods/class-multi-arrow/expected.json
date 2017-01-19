@@ -115,7 +115,6 @@
               "async": false,
               "params": [],
               "skinny": false,
-              "white": true,
               "body": {
                 "type": "Identifier",
                 "start": 25,
@@ -174,7 +173,6 @@
               "async": false,
               "params": [],
               "skinny": true,
-              "white": true,
               "body": {
                 "type": "BlockStatement",
                 "start": 39,
@@ -255,7 +253,10 @@
                     }
                   }
                 ],
-                "directives": []
+                "directives": [],
+                "extra": {
+                  "curly": false
+                }
               }
             },
             {
@@ -298,7 +299,6 @@
               "async": false,
               "params": [],
               "skinny": true,
-              "white": true,
               "body": {
                 "type": "Identifier",
                 "start": 69,

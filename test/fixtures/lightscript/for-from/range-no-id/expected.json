@@ -42,6 +42,7 @@
             "column": 15
           }
         },
+        "id": null,
         "rangeStart": {
           "type": "NumericLiteral",
           "start": 4,
@@ -98,7 +99,10 @@
             }
           },
           "body": [],
-          "directives": []
+          "directives": [],
+          "extra": {
+            "curly": true
+          }
         }
       }
     ],
