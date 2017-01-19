@@ -433,6 +433,15 @@ export default function(instance) {
 
       const context = this.curContext();
 
+      // short-circuit for `<-` and `<!-`
+      // DUP in flow plugin
+      if (this.hasPlugin("lightscript") && code === 60) {
+        const next = this.state.input.charCodeAt(this.state.pos + 1);
+        if (next === 45 || next === 33) {
+          return inner.apply(this, arguments);
+        }
+      }
+
       if (context === tc.j_expr) {
         return this.jsxReadToken();
       }

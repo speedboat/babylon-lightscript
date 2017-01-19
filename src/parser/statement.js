@@ -142,8 +142,8 @@ pp.parseStatement = function (declaration, topLevel) {
   // rewrite `:=` and `: type =`
   if (this.hasPlugin("lightscript") && this.isColonConstAssign(expr)) {
     const decl = this.rewriteAssignmentAsDeclarator(expr);
-    node.declarations = [decl];
     node.kind = "const";
+    node.declarations = [decl];
     return this.finishNode(node, "VariableDeclaration");
   }
 
@@ -651,6 +651,8 @@ pp.parseVar = function (node, isFor, kind) {
     this.parseVarHead(decl);
     if (this.eat(tt.eq)) {
       decl.init = this.parseMaybeAssign(isFor);
+    } else if (this.hasPlugin("lightscript") && !isFor && this.match(tt.awaitArrow)) {
+      decl.init = this.parseAwaitArrow(decl.id);
     } else if (kind === tt._const && !(this.match(tt._in) || this.isContextual("of"))) {
       this.unexpected();
     } else if (decl.id.type !== "Identifier" && !(isFor && (this.match(tt._in) || this.isContextual("of")))) {

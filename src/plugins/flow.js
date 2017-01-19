@@ -1032,6 +1032,16 @@ export default function (instance) {
   instance.extend("readToken", function (inner) {
     return function (code) {
       if (this.state.inType && (code === 62 || code === 60)) {
+
+        // short-circuit for `<-` and `<!-`
+        // DUP in jsx plugin
+        if (this.hasPlugin("lightscript") && code === 60) {
+          const next = this.state.input.charCodeAt(this.state.pos + 1);
+          if (next === 45 || next === 33) {
+            return inner.apply(this, arguments);
+          }
+        }
+
         return this.finishOp(tt.relational, 1);
       } else {
         return inner.call(this, code);

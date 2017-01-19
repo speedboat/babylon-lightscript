@@ -36,7 +36,7 @@ pp.rewriteAssignmentAsDeclarator = function (node) {
 // Must unwind state after calling this!
 // TODO: remove completely, and replace with a non-lookahead solution for perf.
 
-pp.maybeParseColonConstId = function (isForOf) {
+pp.maybeParseColonConstId = function (allowAwait) {
   if (!this.isPossibleColonConst()) return null;
 
   const id = this.startNode();
@@ -46,15 +46,11 @@ pp.maybeParseColonConstId = function (isForOf) {
     return null;
   }
 
-  // if for-of, require, but do not eat, `of`
-  // else, require and eat `:=` or `: Type =`
-  if (isForOf) {
-    if (!this.isContextual("of")) return null;
-  } else if (!(this.eat(tt.colonEq) || this.isTypedColonConst(id))) {
+  if (this.eat(tt.colonEq) || this.isTypedColonConst(id) || (allowAwait && this.match(tt.awaitArrow))) {
+    return id;
+  } else {
     return null;
   }
-
-  return id;
 };
 
 pp.isPossibleColonConst = function () {
@@ -422,6 +418,35 @@ pp.parseIfExpression = function (node) {
     node.alternate = null;
   }
   return this.finishNode(node, "IfExpression");
+};
+
+// c/p parseAwait
+
+pp.parseSafeAwait = function (node) {
+  if (!this.state.inAsync) this.unexpected();
+  node.argument = this.parseMaybeUnary();
+  return this.finishNode(node, "SafeAwaitExpression");
+};
+
+pp.isAwaitArrowAssign = function (expr) {
+  return (
+    expr.type === "AssignmentExpression" &&
+    (expr.operator === "<-" || expr.operator === "<!-")
+  );
+};
+
+pp.parseAwaitArrow = function (left) {
+  const node = this.startNode();
+  const arrowType = this.state.value;
+  this.next();
+  if (arrowType === "<!-") {
+    if (left.type === "ObjectPattern" || left.type === "ArrayPattern") {
+      this.unexpected(left.start, "Destructuring is not allowed with '<!-'.");
+    }
+    return this.parseSafeAwait(node);
+  } else {
+    return this.parseAwait(node);
+  }
 };
 
 

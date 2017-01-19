@@ -437,6 +437,17 @@ export default class Tokenizer {
       return this.nextToken();
     }
 
+    if (this.hasPlugin("lightscript") && code === 60) {
+      // <-
+      if (next === 45) {
+        return this.finishOp(tt.awaitArrow, 2);
+      }
+      // <!-
+      if (next === 33 && this.input.charCodeAt(this.state.pos + 2) === 45) {
+        return this.finishOp(tt.awaitArrow, 3);
+      }
+    }
+
     if (next === 61) {
       // <= | >=
       size = 2;

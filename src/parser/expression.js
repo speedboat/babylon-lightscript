@@ -123,7 +123,7 @@ pp.parseMaybeAssign = function (noIn, refShorthandDefaultPos, afterLeftParse, re
     }
 
     // if it's not followed by `=` after all, unwind
-    if (!(this.match(tt.eq) || this.match(tt.colonEq))) {
+    if (!(this.match(tt.eq) || this.match(tt.colonEq) || this.match(tt.awaitArrow))) {
       this.state = state;
     }
   }
@@ -136,9 +136,11 @@ pp.parseMaybeAssign = function (noIn, refShorthandDefaultPos, afterLeftParse, re
     if (this.hasPlugin("lightscript")) this.rewriteOperator(node);
 
     const isColonEq = this.hasPlugin("lightscript") && this.match(tt.colonEq);
+    const isAwaitArrow = this.hasPlugin("lightscript") && this.match(tt.awaitArrow);
     if (isColonEq && !leftStartsLine) this.unexpected(startPos, "':=' assignment must occur at the beginning of a line.");
+    if (isAwaitArrow && !leftStartsLine) this.unexpected(startPos, "'<-' assignment must occur at the beginning of a line.");
 
-    node.left = this.match(tt.eq) || isColonEq ? this.toAssignable(left, undefined, "assignment expression") : left;
+    node.left = this.match(tt.eq) || isColonEq || isAwaitArrow ? this.toAssignable(left, undefined, "assignment expression") : left;
     refShorthandDefaultPos.start = 0; // reset because shorthand default was used correctly
 
     this.checkLVal(left, undefined, undefined, "assignment expression");
@@ -161,10 +163,15 @@ pp.parseMaybeAssign = function (noIn, refShorthandDefaultPos, afterLeftParse, re
       node.left.loc.end = typeAnnotation.loc.end;
     }
 
-    this.next();
-    node.right = this.parseMaybeAssign(noIn);
+    if (isAwaitArrow) {
+      node.right = this.parseAwaitArrow(node.left);
+    } else {
+      this.next();
+      node.right = this.parseMaybeAssign(noIn);
+    }
+
     return this.finishNode(node, "AssignmentExpression");
-  } else /* TODO: consider parsing light arrows here */ if (failOnShorthandAssign && refShorthandDefaultPos.start) {
+  } else if (failOnShorthandAssign && refShorthandDefaultPos.start) {
     this.unexpected(refShorthandDefaultPos.start);
   }
 
@@ -630,6 +637,14 @@ pp.parseExprAtom = function (refShorthandDefaultPos) {
       if (this.hasPlugin("lightscript")) {
         node = this.startNode();
         return this.parseIfExpression(node);
+      }
+
+    case tt.awaitArrow:
+      if (this.hasPlugin("lightscript")) {
+        node = this.startNode();
+        const isSafe = this.state.value === "<!-";
+        this.next();
+        return isSafe ? this.parseSafeAwait(node) : this.parseAwait(node);
       }
 
     default:
