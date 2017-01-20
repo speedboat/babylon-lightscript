@@ -355,7 +355,7 @@ pp.parseArrowFunctionBody = function (node) {
   this.state.labels = [];
   this.state.inFunction = true;
 
-  node.body = this.parseWhiteBlock(true);
+  node.body = this.parseWhiteBlock(false);
   if (node.body.type !== "BlockStatement") {
     node.expression = true;
   }
