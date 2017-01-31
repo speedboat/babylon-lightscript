@@ -449,6 +449,42 @@ pp.parseAwaitArrow = function (left) {
   }
 };
 
+pp.tryParseNamedArrowDeclaration = function () {
+  let node = this.startNode(), call = this.startNode();
+
+  if (!this.match(tt.name)) return null;
+  if (this.state.value === "type") return null;
+  try {
+    call.callee = this.parseIdentifier();
+  } catch (err) {
+    return null;
+  }
+
+
+  // parse eg; `fn<T>() ->`
+  if (this.hasPlugin("flow") && this.isRelational("<")) {
+    try {
+      node.typeParameters = this.flowParseTypeParameterDeclaration();
+    } catch (err) {
+      return null;
+    }
+  }
+
+  if (!this.eat(tt.parenL)) return null;
+  try {
+    call.arguments = this.parseCallExpressionArguments(tt.parenR, false);
+  } catch (err) {
+    return null;
+  }
+
+  if (!this.shouldParseArrow()) return null;
+  node = this.parseNamedArrowFromCallExpression(node, call);
+
+  // Declaration, not Expression
+  node.type = "NamedArrowDeclaration";
+  return node;
+};
+
 
 export default function (instance) {
 
@@ -467,21 +503,40 @@ export default function (instance) {
 
   instance.extend("parseExport", function (inner) {
     return function (node) {
-      const state = this.state.clone();
-      this.next();
-      const decl = this.startNode();
-      const id = this.maybeParseColonConstId();
+      let state = this.state.clone();
 
+      // first, try colon-const
+      // eg; `export x := 7`, `export { x, y }: Point = a`
+      this.next();
+      let decl = this.startNode();
+      let id = this.maybeParseColonConstId();
       if (id) {
         node.specifiers = [];
         node.source = null;
         node.declaration = this.parseColonEq(decl, id);
         this.checkExport(node, true);
         return this.finishNode(node, "ExportNamedDeclaration");
-      } else {
-        this.state = state;
-        return inner.apply(this, arguments);
       }
+
+      // wasn't colon-const, reset.
+      this.state = state;
+      state = this.state.clone();
+      decl = id = null;
+
+      // now try NamedArrowDeclaration
+      // eg; `export fn() -> 1`, `export fn<T>(x: T): T -> x`
+      this.next();
+      decl = this.tryParseNamedArrowDeclaration();
+      if (decl) {
+        node.specifiers = [];
+        node.source = null;
+        node.declaration = decl;
+        this.checkExport(node, true);
+        return this.finishNode(node, "ExportNamedDeclaration");
+      }
+
+      this.state = state;
+      return inner.apply(this, arguments);
     };
   });
 
