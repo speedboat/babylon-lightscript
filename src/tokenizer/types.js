@@ -58,6 +58,7 @@ export const types = {
   colonEq: new TokenType(":=", { beforeExpr, isAssign }),
   tilde: new TokenType("~"),
   awaitArrow: new TokenType("<-", { beforeExpr, isAssign }),
+  elvis: new TokenType("?."),
 
   num: new TokenType("num", { startsExpr }),
   regexp: new TokenType("regexp", { startsExpr }),

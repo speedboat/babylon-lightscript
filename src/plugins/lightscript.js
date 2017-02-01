@@ -450,7 +450,8 @@ pp.parseAwaitArrow = function (left) {
 };
 
 pp.tryParseNamedArrowDeclaration = function () {
-  let node = this.startNode(), call = this.startNode();
+  let node = this.startNode();
+  const call = this.startNode();
 
   if (!this.match(tt.name)) return null;
   if (this.state.value === "type") return null;

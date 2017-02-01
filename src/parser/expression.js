@@ -348,6 +348,23 @@ pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
       node.property = this.parseIdentifier(true);
       node.computed = false;
       base = this.finishNode(node, "MemberExpression");
+    } else if (this.hasPlugin("lightscript") && this.match(tt.elvis)) {
+      // `x?.y`
+      const node = this.startNodeAt(startPos, startLoc);
+      const op = this.state.value;
+      this.next();
+      node.object = base;
+      if (op === "?.") {
+        node.property = this.parseIdentifier(true);
+        node.computed = false;
+      } else if (op === "?[") {
+        node.property = this.parseExpression();
+        node.computed = true;
+        this.expect(tt.bracketR);
+      } else {
+        this.unexpected();
+      }
+      base = this.finishNode(node, "SafeMemberExpression");
     } else if (this.hasPlugin("lightscript") && !noCalls && this.eat(tt.tilde)) {
       const node = this.startNodeAt(startPos, startLoc);
       node.left = base;

@@ -523,7 +523,16 @@ export default class Tokenizer {
           return this.finishToken(tt.colon);
         }
 
-      case 63: ++this.state.pos; return this.finishToken(tt.question);
+      case 63:
+        if (this.hasPlugin("lightscript")) {
+          const next = this.input.charCodeAt(this.state.pos + 1);
+          // `?.` or `?[`
+          if (next === 46 || next === 91) {
+            return this.finishOp(tt.elvis, 2);
+          }
+        }
+        ++this.state.pos;
+        return this.finishToken(tt.question);
       case 64: ++this.state.pos; return this.finishToken(tt.at);
 
       case 96: // '`'
