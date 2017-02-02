@@ -138,7 +138,7 @@ pp.parseMaybeAssign = function (noIn, refShorthandDefaultPos, afterLeftParse, re
     const isColonEq = this.hasPlugin("lightscript") && this.match(tt.colonEq);
     const isAwaitArrow = this.hasPlugin("lightscript") && this.match(tt.awaitArrow);
     if (isColonEq && !leftStartsLine) this.unexpected(startPos, "':=' assignment must occur at the beginning of a line.");
-    if (isAwaitArrow && !leftStartsLine) this.unexpected(startPos, "'<-' assignment must occur at the beginning of a line.");
+    if (isAwaitArrow && !leftStartsLine) return left;
 
     node.left = this.match(tt.eq) || isColonEq || isAwaitArrow ? this.toAssignable(left, undefined, "assignment expression") : left;
     refShorthandDefaultPos.start = 0; // reset because shorthand default was used correctly
