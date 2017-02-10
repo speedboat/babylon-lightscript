@@ -1,1 +1,1 @@
-export x := 42
+export x = 42

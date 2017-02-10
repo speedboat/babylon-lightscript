@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 58,
+  "end": 57,
   "loc": {
     "start": {
       "line": 1,
@@ -15,7 +15,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 58,
+    "end": 57,
     "loc": {
       "start": {
         "line": 1,
@@ -31,7 +31,7 @@
       {
         "type": "VariableDeclaration",
         "start": 0,
-        "end": 9,
+        "end": 8,
         "loc": {
           "start": {
             "line": 1,
@@ -39,7 +39,7 @@
           },
           "end": {
             "line": 1,
-            "column": 9
+            "column": 8
           }
         },
         "kind": "const",
@@ -47,7 +47,7 @@
           {
             "type": "VariableDeclarator",
             "start": 0,
-            "end": 9,
+            "end": 8,
             "loc": {
               "start": {
                 "line": 1,
@@ -55,7 +55,7 @@
               },
               "end": {
                 "line": 1,
-                "column": 9
+                "column": 8
               }
             },
             "id": {
@@ -77,16 +77,16 @@
             },
             "init": {
               "type": "NumericLiteral",
-              "start": 8,
-              "end": 9,
+              "start": 7,
+              "end": 8,
               "loc": {
                 "start": {
                   "line": 1,
-                  "column": 8
+                  "column": 7
                 },
                 "end": {
                   "line": 1,
-                  "column": 9
+                  "column": 8
                 }
               },
               "extra": {
@@ -100,8 +100,8 @@
       },
       {
         "type": "ExpressionStatement",
-        "start": 11,
-        "end": 58,
+        "start": 10,
+        "end": 57,
         "loc": {
           "start": {
             "line": 3,
@@ -114,8 +114,8 @@
         },
         "expression": {
           "type": "JSXElement",
-          "start": 11,
-          "end": 58,
+          "start": 10,
+          "end": 57,
           "loc": {
             "start": {
               "line": 3,
@@ -128,8 +128,8 @@
           },
           "openingElement": {
             "type": "JSXOpeningElement",
-            "start": 11,
-            "end": 16,
+            "start": 10,
+            "end": 15,
             "loc": {
               "start": {
                 "line": 3,
@@ -143,8 +143,8 @@
             "attributes": [],
             "name": {
               "type": "JSXIdentifier",
-              "start": 12,
-              "end": 15,
+              "start": 11,
+              "end": 14,
               "loc": {
                 "start": {
                   "line": 3,
@@ -161,8 +161,8 @@
           },
           "closingElement": {
             "type": "JSXClosingElement",
-            "start": 52,
-            "end": 58,
+            "start": 51,
+            "end": 57,
             "loc": {
               "start": {
                 "line": 6,
@@ -175,8 +175,8 @@
             },
             "name": {
               "type": "JSXIdentifier",
-              "start": 54,
-              "end": 57,
+              "start": 53,
+              "end": 56,
               "loc": {
                 "start": {
                   "line": 6,
@@ -193,8 +193,8 @@
           "children": [
             {
               "type": "JSXText",
-              "start": 16,
-              "end": 19,
+              "start": 15,
+              "end": 18,
               "loc": {
                 "start": {
                   "line": 3,
@@ -210,8 +210,8 @@
             },
             {
               "type": "JSXElement",
-              "start": 19,
-              "end": 32,
+              "start": 18,
+              "end": 31,
               "loc": {
                 "start": {
                   "line": 4,
@@ -224,8 +224,8 @@
               },
               "openingElement": {
                 "type": "JSXOpeningElement",
-                "start": 19,
-                "end": 24,
+                "start": 18,
+                "end": 23,
                 "loc": {
                   "start": {
                     "line": 4,
@@ -239,8 +239,8 @@
                 "attributes": [],
                 "name": {
                   "type": "JSXIdentifier",
-                  "start": 20,
-                  "end": 23,
+                  "start": 19,
+                  "end": 22,
                   "loc": {
                     "start": {
                       "line": 4,
@@ -257,8 +257,8 @@
               },
               "closingElement": {
                 "type": "JSXClosingElement",
-                "start": 26,
-                "end": 32,
+                "start": 25,
+                "end": 31,
                 "loc": {
                   "start": {
                     "line": 4,
@@ -271,8 +271,8 @@
                 },
                 "name": {
                   "type": "JSXIdentifier",
-                  "start": 28,
-                  "end": 31,
+                  "start": 27,
+                  "end": 30,
                   "loc": {
                     "start": {
                       "line": 4,
@@ -289,8 +289,8 @@
               "children": [
                 {
                   "type": "JSXText",
-                  "start": 24,
-                  "end": 26,
+                  "start": 23,
+                  "end": 25,
                   "loc": {
                     "start": {
                       "line": 4,
@@ -308,8 +308,8 @@
             },
             {
               "type": "JSXText",
-              "start": 32,
-              "end": 35,
+              "start": 31,
+              "end": 34,
               "loc": {
                 "start": {
                   "line": 4,
@@ -325,8 +325,8 @@
             },
             {
               "type": "JSXElement",
-              "start": 35,
-              "end": 51,
+              "start": 34,
+              "end": 50,
               "loc": {
                 "start": {
                   "line": 5,
@@ -339,8 +339,8 @@
               },
               "openingElement": {
                 "type": "JSXOpeningElement",
-                "start": 35,
-                "end": 40,
+                "start": 34,
+                "end": 39,
                 "loc": {
                   "start": {
                     "line": 5,
@@ -354,8 +354,8 @@
                 "attributes": [],
                 "name": {
                   "type": "JSXIdentifier",
-                  "start": 36,
-                  "end": 39,
+                  "start": 35,
+                  "end": 38,
                   "loc": {
                     "start": {
                       "line": 5,
@@ -372,8 +372,8 @@
               },
               "closingElement": {
                 "type": "JSXClosingElement",
-                "start": 45,
-                "end": 51,
+                "start": 44,
+                "end": 50,
                 "loc": {
                   "start": {
                     "line": 5,
@@ -386,8 +386,8 @@
                 },
                 "name": {
                   "type": "JSXIdentifier",
-                  "start": 47,
-                  "end": 50,
+                  "start": 46,
+                  "end": 49,
                   "loc": {
                     "start": {
                       "line": 5,
@@ -404,8 +404,8 @@
               "children": [
                 {
                   "type": "JSXText",
-                  "start": 40,
-                  "end": 45,
+                  "start": 39,
+                  "end": 44,
                   "loc": {
                     "start": {
                       "line": 5,
@@ -423,8 +423,8 @@
             },
             {
               "type": "JSXText",
-              "start": 51,
-              "end": 52,
+              "start": 50,
+              "end": 51,
               "loc": {
                 "start": {
                   "line": 5,

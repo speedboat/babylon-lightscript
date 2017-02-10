@@ -108,13 +108,19 @@ pp.parseMaybeAssign = function (noIn, refShorthandDefaultPos, afterLeftParse, re
     this.state.potentialArrowAt = this.state.start;
   }
 
-  const leftStartsLine = this.isLineBreak();  // for lightscript
+  let leftStartsLine, isNowAssign;
+  if (this.hasPlugin("lightscript")) {
+    leftStartsLine = this.seemsLikeStatementStart();
+    isNowAssign = this.eat(tt._now);
+  }
+
   let left = this.parseMaybeConditional(noIn, refShorthandDefaultPos, refNeedsArrowPos);
   if (afterLeftParse) left = afterLeftParse.call(this, left, startPos, startLoc);
 
   // `varName: type = val`, with unwinding
+  // (this is a likely source of ambiguities, bugs, etc, since whitespace-block colons and others may be interpreted as type decaration)
   let typeAnnotation;
-  if (this.hasPlugin("lightscript") && this.hasPlugin("flow") && leftStartsLine && this.match(tt.colon)) {
+  if (this.hasPlugin("lightscript") && this.hasPlugin("flow") && this.match(tt.colon) && !this.isFollowedByLineBreak() && leftStartsLine) {
     const state = this.state.clone();
     try {
       typeAnnotation = this.flowParseTypeAnnotation();
@@ -137,8 +143,7 @@ pp.parseMaybeAssign = function (noIn, refShorthandDefaultPos, afterLeftParse, re
 
     const isColonEq = this.hasPlugin("lightscript") && this.match(tt.colonEq);
     const isAwaitArrow = this.hasPlugin("lightscript") && this.match(tt.awaitArrow);
-    if (isColonEq && !leftStartsLine) this.unexpected(startPos, "':=' assignment must occur at the beginning of a line.");
-    if (isAwaitArrow && !leftStartsLine) return left;
+    if (isAwaitArrow && this.isLineBreak()) return left;
 
     node.left = this.match(tt.eq) || isColonEq || isAwaitArrow ? this.toAssignable(left, undefined, "assignment expression") : left;
     refShorthandDefaultPos.start = 0; // reset because shorthand default was used correctly
@@ -170,9 +175,21 @@ pp.parseMaybeAssign = function (noIn, refShorthandDefaultPos, afterLeftParse, re
       node.right = this.parseMaybeAssign(noIn);
     }
 
+    if (this.hasPlugin("lightscript")) {
+      node.isNowAssign = isNowAssign;
+    }
+
     return this.finishNode(node, "AssignmentExpression");
   } else if (failOnShorthandAssign && refShorthandDefaultPos.start) {
     this.unexpected(refShorthandDefaultPos.start);
+  }
+
+  if (this.hasPlugin("lightscript") && isNowAssign) {
+    if (left.type === "UpdateExpression") {
+      left.isNowAssign = true;
+    } else {
+      this.unexpected(left.start, "`now` can only be used with assignments and updates.");
+    }
   }
 
   return left;

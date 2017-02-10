@@ -58,7 +58,6 @@
               "column": 21
             }
           },
-          "kind": "const",
           "declarations": [
             {
               "type": "VariableDeclarator",
@@ -190,7 +189,8 @@
                 "elements": []
               }
             }
-          ]
+          ],
+          "kind": "const"
         },
         "exportKind": "value"
       }

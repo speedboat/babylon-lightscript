@@ -3,23 +3,11 @@ import { types as tt } from "../tokenizer/types";
 
 const pp = Parser.prototype;
 
-// mostly a simplified dup of parseVar and parseVarStatement
-
-pp.parseColonEq = function(node, decl, isFor) {
-  node.kind = "const";
-
-  decl.init = this.parseMaybeAssign(isFor);
-  node.declarations = [this.finishNode(decl, "VariableDeclarator")];
-
-  this.semicolon();
-
-  return this.finishNode(node, "VariableDeclaration");
-};
-
 pp.isColonConstAssign = function (expr) {
   return (
     expr.type === "AssignmentExpression" &&
-    (expr.operator === ":=" || expr.left.typeAnnotation)
+    (expr.operator === ":=" || expr.left.typeAnnotation) ||
+    (expr.operator === "=" && expr.isNowAssign === false && expr.left.type !== "MemberExpression")
   );
 };
 
@@ -30,43 +18,35 @@ pp.rewriteAssignmentAsDeclarator = function (node) {
   delete node.left;
   delete node.operator;
   delete node.right;
+  delete node.isNowAssign;
   return node;
 };
 
 // Must unwind state after calling this!
-// TODO: remove completely, and replace with a non-lookahead solution for perf.
+// c/p parseVar and parseVarStatement
 
-pp.maybeParseColonConstId = function (allowAwait) {
-  if (!this.isPossibleColonConst()) return null;
 
-  const id = this.startNode();
+pp.tryParseAutoConst = function () {
+  const node = this.startNode(), decl = this.startNode();
   try {
-    this.parseVarHead(id);
+    this.parseVarHead(decl);
   } catch (err) {
     return null;
   }
 
-  if (this.eat(tt.colonEq) || this.isTypedColonConst(id) || (allowAwait && this.match(tt.awaitArrow))) {
-    return id;
-  } else {
+  if (!this.eat(tt.eq)) return null;
+
+  try {
+    decl.init = this.parseMaybeAssign();
+  } catch (err) {
     return null;
   }
-};
 
-pp.isPossibleColonConst = function () {
-  return (
-    this.match(tt.name) ||
-    this.match(tt.braceL) ||
-    this.match(tt.bracketL)
-  );
-};
+  node.declarations = [this.finishNode(decl, "VariableDeclarator")];
+  node.kind = "const";
+  this.semicolon();
 
-pp.isTypedColonConst = function (decl) {
-  return (
-    this.hasPlugin("flow") &&
-    decl.id.typeAnnotation &&
-    (this.eat(tt.eq) || this.eat(tt.colonEq))
-  );
+  return this.finishNode(node, "VariableDeclaration");
 };
 
 const REMAPPED_OPERATORS = {
@@ -251,7 +231,16 @@ pp.isNextCharWhitespace = function () {
   return this.isWhitespaceAt(this.state.end);
 };
 
-// currently unused, but totally the kind of thing that might come in handy.
+// Arguably one of the hackiest parts of LightScript so far.
+
+pp.seemsLikeStatementStart = function () {
+  const lastTok = this.state.tokens[this.state.tokens.length - 1];
+  if (lastTok && lastTok.type === tt.semi) return true;
+  if (lastTok && lastTok.type === tt.braceR) return true;
+
+  // This is not accurate; could easily be a continuation of a previous expression.
+  if (this.isLineBreak()) return true;
+};
 
 pp.isFollowedByLineBreak = function () {
   const end = this.state.input.length;
@@ -508,34 +497,36 @@ export default function (instance) {
     return function (node) {
       let state = this.state.clone();
 
-      // first, try colon-const
-      // eg; `export x := 7`, `export { x, y }: Point = a`
-      this.next();
-      let decl = this.startNode();
-      let id = this.maybeParseColonConstId();
-      if (id) {
-        node.specifiers = [];
-        node.source = null;
-        node.declaration = this.parseColonEq(decl, id);
-        this.checkExport(node, true);
-        return this.finishNode(node, "ExportNamedDeclaration");
-      }
-
-      // wasn't colon-const, reset.
-      this.state = state;
-      state = this.state.clone();
-      decl = id = null;
-
-      // now try NamedArrowDeclaration
+      // first try NamedArrowDeclaration
       // eg; `export fn() -> 1`, `export fn<T>(x: T): T -> x`
       this.next();
-      decl = this.tryParseNamedArrowDeclaration();
-      if (decl) {
-        node.specifiers = [];
-        node.source = null;
-        node.declaration = decl;
-        this.checkExport(node, true);
-        return this.finishNode(node, "ExportNamedDeclaration");
+      if (this.match(tt.name)) {
+        const decl = this.tryParseNamedArrowDeclaration();
+        if (decl) {
+          node.specifiers = [];
+          node.source = null;
+          node.declaration = decl;
+          this.checkExport(node, true);
+          return this.finishNode(node, "ExportNamedDeclaration");
+        }
+      }
+
+      // wasn't a NamedArrowDeclaration, reset.
+      this.state = state;
+      state = this.state.clone();
+
+      // next, try auto-const
+      // eg; `export x = 7`, `export { x, y }: Point = a`
+      this.next();
+      if (this.match(tt.name) || this.match(tt.bracketL) || this.match(tt.braceL)) {
+        const decl = this.tryParseAutoConst();
+        if (decl) {
+          node.specifiers = [];
+          node.source = null;
+          node.declaration = decl;
+          this.checkExport(node, true);
+          return this.finishNode(node, "ExportNamedDeclaration");
+        }
       }
 
       this.state = state;

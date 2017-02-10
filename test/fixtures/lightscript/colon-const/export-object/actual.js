@@ -1,1 +1,1 @@
-export {x} := {}
+export {x} = {}

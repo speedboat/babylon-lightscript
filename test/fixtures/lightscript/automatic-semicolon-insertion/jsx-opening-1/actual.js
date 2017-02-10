@@ -1,4 +1,4 @@
-blah := 1
+blah = 1
 
 <div>
   <div>hi</div>

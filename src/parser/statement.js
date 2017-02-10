@@ -144,6 +144,7 @@ pp.parseStatement = function (declaration, topLevel) {
     const decl = this.rewriteAssignmentAsDeclarator(expr);
     node.kind = "const";
     node.declarations = [decl];
+    this.semicolon();
     return this.finishNode(node, "VariableDeclaration");
   }
 
@@ -153,15 +154,7 @@ pp.parseStatement = function (declaration, topLevel) {
   }
 
   if (starttype === tt.name && expr.type === "Identifier" && this.eat(tt.colon)) {
-    const labeledNode = this.parseLabeledStatement(node, maybeName, expr);
-
-    // catch fall-through from `: type =` code in parseMaybeAssign
-    if (this.hasPlugin("lightscript") && this.hasPlugin("flow")) {
-      if (labeledNode.body.type === "ExpressionStatement" && labeledNode.body.expression.type === "AssignmentExpression") {
-        this.unexpected(labeledNode.start, "It looks like you are trying to declare a const via type declaration; to do so, the variable name must be the first item on the line.");
-      }
-    }
-    return labeledNode;
+    return this.parseLabeledStatement(node, maybeName, expr);
   } else {
     return this.parseExpressionStatement(node, expr);
   }

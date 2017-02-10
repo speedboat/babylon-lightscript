@@ -1,3 +1,0 @@
-{
-  "throws": "It looks like you are trying to declare a const via type declaration; to do so, the variable name must be the first item on the line. (1:3)"
-}

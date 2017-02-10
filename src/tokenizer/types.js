@@ -126,6 +126,7 @@ export const keywords = {
   "til": new KeywordTokenType("til", { beforeExpr }),
   "thru": new KeywordTokenType("thru", { beforeExpr }),
   "elif": new KeywordTokenType("elif", { beforeExpr }),
+  "now": new KeywordTokenType("now", { beforeExpr }),
   "or": types.logicalOR,
   "and": types.logicalAND,
   "not": new KeywordTokenType("not", { beforeExpr, prefix, startsExpr }),
