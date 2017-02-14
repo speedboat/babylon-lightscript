@@ -206,7 +206,7 @@
                 }
               },
               "extra": null,
-              "value": "\n"
+              "value": "\n  "
             },
             {
               "type": "JSXElement",
@@ -321,7 +321,7 @@
                 }
               },
               "extra": null,
-              "value": "\n"
+              "value": "\n  "
             },
             {
               "type": "JSXElement",
