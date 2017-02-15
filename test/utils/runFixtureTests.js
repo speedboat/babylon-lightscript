@@ -1,5 +1,7 @@
 var test = require("ava");
 var getFixtures = require("babel-helper-fixtures").multiple;
+var readFile = require("babel-helper-fixtures").readFile;
+var resolve = require("try-resolve");
 
 const only = {
   topic: null,
@@ -64,6 +66,55 @@ exports.runThrowTestsWithEstree = function runThrowTestsWithEstree(fixturesPath,
   });
 };
 
+exports.runTestsWithLightScript = function runTestsWithLightScript(fixturesPath, parseFunction) {
+  var fixtures = getFixtures(fixturesPath);
+
+  Object.keys(fixtures).forEach(function (name) {
+
+    // don't need to double-test lightscript
+    if (name.indexOf('lightscript') === 0) return
+
+    if (only.topic && name.indexOf(only.topic) < 0) return
+    fixtures[name].forEach(function (testSuite) {
+      if (only.suite && testSuite.title.indexOf(only.suite) < 0) return
+      testSuite.tests.forEach(function (task) {
+        if (only.task && task.title.indexOf(only.task) < 0) return
+
+        task.options.plugins = task.options.plugins || [];
+        task.options.plugins.push("lightscript");
+
+        var testFn = task.disabled ? test.skip : task.options.only ? test.only : test;
+
+        const lightOptionsLoc = resolve(task.actual.loc.replace("actual.js", "options.lightscript.json"));
+        if (lightOptionsLoc) {
+          const lightOptions = JSON.parse(readFile(lightOptionsLoc));
+          task.options = Object.assign({}, task.options, lightOptions);
+          delete task.expect.code;
+        }
+
+        const lightExpectLoc = resolve(task.actual.loc.replace("actual.js", "expected.lightscript.json"));
+        if (lightExpectLoc) {
+          task.expect = {
+            loc: lightExpectLoc,
+            code: readFile(lightExpectLoc),
+            filename: task.actual.filename.replace("actual.js", "expected.lightscript.json"),
+          }
+          delete task.options.throws;
+        }
+
+        testFn(name + "/" + testSuite.title + "/" + task.title, function () {
+          try {
+            return runTest(task, parseFunction);
+          } catch (err) {
+            err.message = task.actual.loc + ": " + err.message;
+            throw err;
+          }
+        });
+      });
+    });
+  });
+};
+
 function save(test, ast) {
   delete ast.tokens;
   if (ast.comments && !ast.comments.length) delete ast.comments;
@@ -100,7 +151,7 @@ function runTest(test, parseFunction) {
   }
 
   if (!test.expect.code && !opts.throws && !process.env.CI) {
-    test.expect.loc += "on";
+    if (test.expect.loc.indexOf(".json") < 0) test.expect.loc += "on";
     return save(test, ast);
   }
 
