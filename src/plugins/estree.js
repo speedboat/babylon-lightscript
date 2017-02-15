@@ -58,8 +58,12 @@ export default function (instance) {
     };
   });
 
-  instance.extend("checkGetterSetterParamCount", function() {
+  instance.extend("checkGetterSetterParamCount", function(inner) {
     return function (prop) {
+      if (this.hasPlugin("lightscript") && prop.params) {
+        return inner.apply(this, arguments);
+      }
+
       const paramCount = prop.kind === "get" ? 0 : 1;
       if (prop.value.params.length !== paramCount) {
         const start = prop.start;

@@ -1,15 +1,21 @@
 var test = require("ava");
 var getFixtures = require("babel-helper-fixtures").multiple;
 
+const only = {
+  topic: null,
+  suite: null,
+  task: null,
+}
+
 exports.runFixtureTests = function runFixtureTests(fixturesPath, parseFunction) {
   var fixtures = getFixtures(fixturesPath);
 
   Object.keys(fixtures).forEach(function (name) {
-    // if (name.title.indexOf('lightscript') < 0) return
+    if (only.topic && name.indexOf(only.topic) < 0) return
     fixtures[name].forEach(function (testSuite) {
-      // if (testSuite.title.indexOf('typed') < 0) return
+      if (only.suite && testSuite.title.indexOf(only.suite) < 0) return
       testSuite.tests.forEach(function (task) {
-        // if (task.title.indexOf('typed') < 0) return
+        if (only.task && task.title.indexOf(only.task) < 0) return
         var testFn = task.disabled ? test.skip : task.options.only ? test.only : test;
 
         testFn(name + "/" + testSuite.title + "/" + task.title, function () {
@@ -29,8 +35,15 @@ exports.runThrowTestsWithEstree = function runThrowTestsWithEstree(fixturesPath,
   var fixtures = getFixtures(fixturesPath);
 
   Object.keys(fixtures).forEach(function (name) {
+
+    // for now, lightscript just won't support ESTree error messages
+    if (name.indexOf('lightscript') === 0) return
+
+    if (only.topic && name.indexOf(only.topic) < 0) return
     fixtures[name].forEach(function (testSuite) {
+      if (only.suite && testSuite.title.indexOf(only.suite) < 0) return
       testSuite.tests.forEach(function (task) {
+        if (only.task && task.title.indexOf(only.task) < 0) return
         if (!task.options.throws) return;
 
         task.options.plugins = task.options.plugins || [];

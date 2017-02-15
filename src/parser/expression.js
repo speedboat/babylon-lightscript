@@ -1084,6 +1084,11 @@ pp.parseMethod = function (node, isGenerator, isAsync) {
 
   if (this.hasPlugin("lightscript") && this.match(tt.arrow)) {
     this.parseArrowType(node);
+
+    if (node.kind === "get" || node.kind === "set") {
+      this.checkGetterSetterParamCount(node);
+    }
+
     this.parseArrowFunctionBody(node);
   } else {
     this.parseFunctionBody(node);
