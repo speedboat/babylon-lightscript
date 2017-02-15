@@ -226,7 +226,8 @@ pp.parseWhiteBlock = function (allowDirectives?, isIfExpression?) {
     this.unexpected(null, "Whitespace Block must start with a colon or arrow");
   }
 
-  this.parseBlockBody(node, allowDirectives, false, indentLevel);
+  // never parse directives if curly braces aren't used (TODO: document)
+  this.parseBlockBody(node, false, false, indentLevel);
   this.addExtra(node, "curly", false);
   if (!node.body.length) this.unexpected(node.start, "Expected an Indent or Statement");
 
@@ -355,7 +356,8 @@ pp.parseArrowFunctionBody = function (node) {
   this.state.labels = [];
   this.state.inFunction = true;
 
-  node.body = this.parseWhiteBlock(false);
+  node.body = this.parseWhiteBlock(true);
+
   if (node.body.type !== "BlockStatement") {
     node.expression = true;
   }
