@@ -481,9 +481,36 @@ export default function (instance) {
 
   // if, switch, while, with --> don't need no stinkin' parens no more
 
-  instance.extend("parseParenExpression", function (inner) {
+  instance.extend("parseParenExpression", function () {
     return function () {
-      if (this.match(tt.parenL)) return inner.apply(this, arguments);
+      const startPos = this.state.start;
+      const startLoc = this.state.startLoc;
+      if (this.eat(tt.parenL)) {
+        const parenContents = this.parseExpression();
+
+        const spaceAfterParens = this.isNextCharWhitespace();
+        this.expect(tt.parenR);
+
+        // `if (blah) +` or `if (blah).anything` fallthrough
+        if (spaceAfterParens && this.state.type.binop == null) {
+          return parenContents;
+        }
+        // `if (blah) + 1` vs `if (blah) +1`
+        if (this.match(tt.plusMin) && !this.isNextCharWhitespace()) {
+          return parenContents;
+        }
+
+        // TODO: consider decorating the node itself as being paren-free.
+        this.addExtra(parenContents, "parenthesized", true);
+        this.addExtra(parenContents, "parenStart", startPos);
+
+        if (this.state.type.binop != null) {
+          return this.parseExprOp(parenContents, startPos, startLoc, -1);
+        } else {
+          return this.parseSubscripts(parenContents, startPos, startLoc);
+        }
+      }
+
       const val = this.parseExpression();
       this.expectParenFreeBlockStart();
       return val;
