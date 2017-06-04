@@ -587,6 +587,10 @@ pp.parseMatch = function (node, isExpression) {
     node.cases.push(matchCase);
   }
 
+  if (!node.cases.length) {
+    this.unexpected(null, tt.bitwiseOR);
+  }
+
   return this.finishNode(node, isExpression ? "MatchExpression" : "MatchStatement");
 };
 
