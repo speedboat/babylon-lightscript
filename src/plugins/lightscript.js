@@ -700,6 +700,12 @@ pp.parseMatchCaseTestPattern = function () {
   return node;
 };
 
+pp.parseMatchCasePlaceholder = function () {
+  // use the blank space as an empty value (perhaps 0-length would be better)
+  const node = this.startNodeAt(this.state.lastTokEnd, this.state.lastTokEndLoc);
+  return this.finishNodeAt(node, "PlaceholderExpression", this.state.start, this.state.startLoc);
+};
+
 
 export default function (instance) {
 

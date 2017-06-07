@@ -294,6 +294,7 @@ pp.parseMaybeUnary = function (refShorthandDefaultPos) {
   const matchCaseBinaryPlusMin = this.hasPlugin("lightscript") &&
     this.state.inMatchCaseTest &&
     this.match(tt.plusMin) &&
+    this.state.tokens[this.state.tokens.length - 1].value !== "!" &&
     this.isNextCharWhitespace();
 
   if (this.state.type.prefix && !matchCaseBinaryPlusMin) {
@@ -312,7 +313,19 @@ pp.parseMaybeUnary = function (refShorthandDefaultPos) {
     this.next();
 
     const argType = this.state.type;
-    node.argument = this.parseMaybeUnary();
+
+    // change precedence / allow autofill of `not` within `match` test
+    if (this.hasPlugin("lightscript") && node.operator === "!" && this.state.inMatchCaseTest && !argType.startsExpr) {
+      if (this.match(tt.colon) || this.match(tt.logicalOR) || this.match(tt.logicalAND)) {
+        // allow `| not:`, `| !!:`, `| not or x:`
+        node.argument = this.parseMatchCasePlaceholder();
+      } else {
+        // change precedence of `| not < 3:` to `!(x < 3)` from `(!x) < 3`
+        node.argument = this.parseExprOps();
+      }
+    } else {
+      node.argument = this.parseMaybeUnary();
+    }
 
     this.addExtra(node, "parenthesizedArgument", argType === tt.parenL && (!node.argument.extra || !node.argument.extra.parenthesized));
 
@@ -762,9 +775,7 @@ pp.parseExprAtom = function (refShorthandDefaultPos) {
 
     default:
       if (this.hasPlugin("lightscript") && this.allowMatchCasePlaceholder()) {
-        // use the blank space as an empty value (perhaps 0-length would be better)
-        node = this.startNodeAt(this.state.lastTokEnd, this.state.lastTokEndLoc);
-        return this.finishNodeAt(node, "PlaceholderExpression", this.state.start, this.state.startLoc);
+        return this.parseMatchCasePlaceholder();
       }
       this.unexpected();
   }
