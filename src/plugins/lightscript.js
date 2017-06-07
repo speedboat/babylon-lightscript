@@ -563,8 +563,9 @@ pp.parseMatch = function (node, isExpression) {
   this.expect(tt._match);
   node.discriminant = this.parseParenExpression();
 
+  const isColon = this.match(tt.colon);
   let isEnd;
-  if (this.match(tt.colon)) {
+  if (isColon) {
     const indentLevel = this.state.indentLevel;
     this.next();
     isEnd = () => this.state.indentLevel <= indentLevel || this.match(tt.eof);
@@ -574,10 +575,14 @@ pp.parseMatch = function (node, isExpression) {
   }
 
   node.cases = [];
+  const caseIndentLevel = this.state.indentLevel;
   let hasUsedElse = false;
   while (!isEnd()) {
     if (hasUsedElse) {
       this.unexpected(null, "`else` must be last case.");
+    }
+    if (isColon && this.state.indentLevel !== caseIndentLevel) {
+      this.unexpected(null, "Mismatched indent.");
     }
 
     const matchCase = this.parseMatchCase(isExpression);
@@ -632,7 +637,7 @@ pp.parseMatchCaseTest = function (node) {
     // disambiguate `| { a, b }:` from `| { a, b }~someFn():`
     const bindingOrTest = this.parseExprOps(false, { start: 0 });
     try {
-      node.binding = this.toAssignable(bindingOrTest.__clone(), true, 'match test');
+      node.binding = this.toAssignable(bindingOrTest.__clone(), true, "match test");
       node.test = null;
     } catch (_err) {
       node.test = bindingOrTest;
@@ -642,7 +647,7 @@ pp.parseMatchCaseTest = function (node) {
   }
 
   if (this.eat(tt._with)) {
-    if (node.binding) this.unexpected(this.state.lastTokStart, "Cannot destructure twice.")
+    if (node.binding) this.unexpected(this.state.lastTokStart, "Cannot destructure twice.");
     if (!(this.match(tt.braceL) || this.match(tt.bracketL))) this.unexpected();
     node.binding = this.parseBindingAtom();
   }
