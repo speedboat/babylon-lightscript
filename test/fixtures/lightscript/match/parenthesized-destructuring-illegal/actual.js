@@ -1,2 +1,2 @@
 a = match x:
-  | 3 as (three): three
+  | 3 with ({ three }): three

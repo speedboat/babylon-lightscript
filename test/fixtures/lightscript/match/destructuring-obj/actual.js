@@ -1,5 +1,5 @@
 match x:
-  | ~isObject() and { a, b } and a~isNumber() and a > 1: a + b
+  | ~isObject() and .a and .a~isNumber() and .a > 1 with { a, b }: a + b
   | { a, b }: a - b
   | { a, b = 2 }: a + b - 2
   | {

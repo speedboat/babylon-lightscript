@@ -581,7 +581,7 @@ pp.parseMatch = function (node, isExpression) {
     }
 
     const matchCase = this.parseMatchCase(isExpression);
-    if (matchCase.test.type === "MatchElse") {
+    if (matchCase.test && matchCase.test.type === "MatchElse") {
       hasUsedElse = true;
     }
     node.cases.push(matchCase);
@@ -597,16 +597,7 @@ pp.parseMatch = function (node, isExpression) {
 pp.parseMatchCase = function (isExpression) {
   const node = this.startNode();
 
-  this.state.allowMatchCaseTestPattern = true;
-  node.test = this.parseMatchCaseTest();
-  if (this.isContextual("as")) {
-    if (!this.state.allowMatchCaseTestPattern) {
-      this.unexpected(null, "Cannot rename after destructuring.");
-    }
-    this.next();
-    node.binding = this.parseBindingAtom();
-  }
-  this.state.allowMatchCaseTestPattern = false;
+  this.parseMatchCaseTest(node);
 
   if (isExpression) {
     // disallow return/continue/break, etc. c/p doExpression
@@ -626,24 +617,37 @@ pp.parseMatchCase = function (isExpression) {
   return this.finishNode(node, "MatchCase");
 };
 
-pp.parseMatchCaseTest = function () {
+pp.parseMatchCaseTest = function (node) {
   // can't be nested so no need to read/restore old value
   this.state.inMatchCaseTest = true;
 
   this.expect(tt.bitwiseOR);
   if (this.isLineBreak()) this.unexpected(this.state.lastTokEnd, "Illegal newline.");
 
-  let test;
   if (this.match(tt._else)) {
     const elseNode = this.startNode();
     this.next();
-    test = this.finishNode(elseNode, "MatchElse");
+    node.test = this.finishNode(elseNode, "MatchElse");
+  } else if (this.match(tt.braceL) || this.match(tt.bracketL)) {
+    // disambiguate `| { a, b }:` from `| { a, b }~someFn():`
+    const bindingOrTest = this.parseExprOps(false, { start: 0 });
+    try {
+      node.binding = this.toAssignable(bindingOrTest.__clone(), true, 'match test');
+      node.test = null;
+    } catch (_err) {
+      node.test = bindingOrTest;
+    }
   } else {
-    test = this.parseExprOps();
+    node.test = this.parseExprOps();
+  }
+
+  if (this.eat(tt._with)) {
+    if (node.binding) this.unexpected(this.state.lastTokStart, "Cannot destructure twice.")
+    if (!(this.match(tt.braceL) || this.match(tt.bracketL))) this.unexpected();
+    node.binding = this.parseBindingAtom();
   }
 
   this.state.inMatchCaseTest = false;
-  return test;
 };
 
 pp.isBinaryTokenForMatchCase = function (tokenType) {

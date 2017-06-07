@@ -3,7 +3,7 @@ a = match x:
   | z {
     "z"
   }
-  | a as b {
+  | a with { b } {
     b
     b
   }

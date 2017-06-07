@@ -691,9 +691,6 @@ pp.parseExprAtom = function (refShorthandDefaultPos) {
       return this.parseParenAndDistinguishExpression(null, null, canBeArrow);
 
     case tt.bracketL:
-      if (this.hasPlugin("lightscript") && this.state.inMatchCaseTest) {
-        return this.parseMatchCaseTestPattern();
-      }
       node = this.startNode();
       this.next();
       if (this.hasPlugin("lightscript") && this.match(tt._for)) {
@@ -704,9 +701,6 @@ pp.parseExprAtom = function (refShorthandDefaultPos) {
       return this.finishNode(node, "ArrayExpression");
 
     case tt.braceL:
-      if (this.hasPlugin("lightscript") && this.state.inMatchCaseTest) {
-        return this.parseMatchCaseTestPattern();
-      }
       return this.parseObj(false, refShorthandDefaultPos);
 
     case tt._function:

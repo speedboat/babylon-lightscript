@@ -74,7 +74,7 @@
                 "column": 34
               }
             },
-            "test": {
+            "binding": {
               "type": "ObjectPattern",
               "start": 13,
               "end": 123,
@@ -493,6 +493,7 @@
                 }
               ]
             },
+            "test": null,
             "consequent": {
               "type": "BlockStatement",
               "start": 123,
