@@ -111,9 +111,10 @@ pp.expectParenFreeBlockStart = function (node) {
   // if true: blah
   // if true { blah }
   // if (true) blah
+  // match (foo) as bar:
   if (node && node.extra && node.extra.hasParens) {
     this.expect(tt.parenR);
-  } else if (!(this.match(tt.colon) || this.match(tt.braceL))) {
+  } else if (!(this.match(tt.colon) || this.match(tt.braceL) || this.isContextual("as"))) {
     this.unexpected(null, "Paren-free test expressions must be followed by braces or a colon.");
   }
 };
@@ -561,7 +562,11 @@ pp.parseMatchStatement = function (node) {
 pp.parseMatch = function (node, isExpression) {
   if (this.state.inMatchCaseTest) this.unexpected();
   this.expect(tt._match);
+
   node.discriminant = this.parseParenExpression();
+  if (this.eatContextual("as")) {
+    node.alias = this.parseIdentifier();
+  }
 
   const isColon = this.match(tt.colon);
   let isEnd;
@@ -673,7 +678,8 @@ export default function (instance) {
         // first, try paren-free style
         try {
           const val = this.parseExpression();
-          if (this.match(tt.braceL) || this.match(tt.colon)) {
+          // "as" for `match (foo) as bar:`, bit dirty to allow for all but not a problem
+          if (this.match(tt.braceL) || this.match(tt.colon) || this.isContextual("as")) {
             if (val.extra && val.extra.parenthesized) {
               delete val.extra.parenthesized;
               delete val.extra.parenStart;
