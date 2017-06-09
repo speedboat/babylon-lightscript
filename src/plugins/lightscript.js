@@ -638,26 +638,23 @@ pp.parseMatchCaseTest = function (node) {
     const elseNode = this.startNode();
     this.next();
     node.test = this.finishNode(elseNode, "MatchElse");
-  } else if (this.match(tt.braceL) || this.match(tt.bracketL)) {
-    // disambiguate `| { a, b }:` from `| { a, b }~someFn():`
-    const bindingOrTest = this.parseExprOps(false, { start: 0 });
-    try {
-      node.binding = this.toAssignable(bindingOrTest.__clone(), true, "match test");
-      node.test = null;
-    } catch (_err) {
-      node.test = bindingOrTest;
-    }
+  } else if (this.eat(tt._with)) {
+    this.parseMatchCaseBinding(node);
   } else {
     node.test = this.parseExprOps();
   }
 
   if (this.eat(tt._with)) {
-    if (node.binding) this.unexpected(this.state.lastTokStart, "Cannot destructure twice.");
-    if (!(this.match(tt.braceL) || this.match(tt.bracketL))) this.unexpected();
-    node.binding = this.parseBindingAtom();
+    this.parseMatchCaseBinding(node);
   }
 
   this.state.inMatchCaseTest = false;
+};
+
+pp.parseMatchCaseBinding = function (node) {
+  if (node.binding) this.unexpected(this.state.lastTokStart, "Cannot destructure twice.");
+  if (!(this.match(tt.braceL) || this.match(tt.bracketL))) this.unexpected();
+  node.binding = this.parseBindingAtom();
 };
 
 

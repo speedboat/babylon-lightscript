@@ -1,2 +1,2 @@
 match x:
-  | { a, b = 1 }: a - b
+  | with { a, b = 1 }: a - b
