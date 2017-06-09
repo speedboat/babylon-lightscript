@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 70,
+  "end": 59,
   "loc": {
     "start": {
       "line": 1,
@@ -15,7 +15,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 70,
+    "end": 59,
     "loc": {
       "start": {
         "line": 1,
@@ -31,7 +31,7 @@
       {
         "type": "VariableDeclaration",
         "start": 0,
-        "end": 70,
+        "end": 59,
         "loc": {
           "start": {
             "line": 1,
@@ -50,7 +50,7 @@
           {
             "type": "VariableDeclarator",
             "start": 0,
-            "end": 70,
+            "end": 59,
             "loc": {
               "start": {
                 "line": 1,
@@ -81,7 +81,7 @@
             "init": {
               "type": "MatchExpression",
               "start": 4,
-              "end": 70,
+              "end": 59,
               "loc": {
                 "start": {
                   "line": 1,
@@ -114,7 +114,7 @@
                 {
                   "type": "MatchCase",
                   "start": 17,
-                  "end": 41,
+                  "end": 30,
                   "loc": {
                     "start": {
                       "line": 2,
@@ -122,13 +122,13 @@
                     },
                     "end": {
                       "line": 2,
-                      "column": 26
+                      "column": 15
                     }
                   },
                   "test": {
-                    "type": "BinaryExpression",
+                    "type": "NumericLiteral",
                     "start": 19,
-                    "end": 22,
+                    "end": 20,
                     "loc": {
                       "start": {
                         "line": 2,
@@ -136,86 +136,55 @@
                       },
                       "end": {
                         "line": 2,
-                        "column": 7
+                        "column": 5
                       }
                     },
-                    "left": {
-                      "type": "PlaceholderExpression",
-                      "start": 18,
-                      "end": 19,
-                      "loc": {
-                        "start": {
-                          "line": 2,
-                          "column": 3
-                        },
-                        "end": {
-                          "line": 2,
-                          "column": 4
-                        }
-                      }
+                    "extra": {
+                      "rawValue": 2,
+                      "raw": "2"
                     },
-                    "operator": ">",
-                    "right": {
-                      "type": "NumericLiteral",
-                      "start": 21,
-                      "end": 22,
-                      "loc": {
-                        "start": {
-                          "line": 2,
-                          "column": 6
-                        },
-                        "end": {
-                          "line": 2,
-                          "column": 7
-                        }
-                      },
-                      "extra": {
-                        "rawValue": 2,
-                        "raw": "2"
-                      },
-                      "value": 2
-                    }
+                    "value": 2
                   },
                   "consequent": {
                     "type": "ExpressionStatement",
-                    "start": 24,
-                    "end": 41,
+                    "start": 22,
+                    "end": 30,
                     "loc": {
                       "start": {
                         "line": 2,
-                        "column": 9
+                        "column": 7
                       },
                       "end": {
                         "line": 2,
-                        "column": 26
+                        "column": 15
                       }
                     },
                     "expression": {
                       "type": "StringLiteral",
-                      "start": 24,
-                      "end": 41,
+                      "start": 22,
+                      "end": 30,
                       "loc": {
                         "start": {
                           "line": 2,
-                          "column": 9
+                          "column": 7
                         },
                         "end": {
                           "line": 2,
-                          "column": 26
+                          "column": 15
                         }
                       },
                       "extra": {
-                        "rawValue": "bigger than two",
-                        "raw": "\"bigger than two\""
+                        "rawValue": "eq two",
+                        "raw": "\"eq two\""
                       },
-                      "value": "bigger than two"
+                      "value": "eq two"
                     }
                   }
                 },
                 {
                   "type": "MatchCase",
-                  "start": 44,
-                  "end": 70,
+                  "start": 33,
+                  "end": 59,
                   "loc": {
                     "start": {
                       "line": 3,
@@ -228,8 +197,8 @@
                   },
                   "test": {
                     "type": "MatchElse",
-                    "start": 46,
-                    "end": 50,
+                    "start": 35,
+                    "end": 39,
                     "loc": {
                       "start": {
                         "line": 3,
@@ -243,8 +212,8 @@
                   },
                   "consequent": {
                     "type": "ExpressionStatement",
-                    "start": 52,
-                    "end": 70,
+                    "start": 41,
+                    "end": 59,
                     "loc": {
                       "start": {
                         "line": 3,
@@ -257,8 +226,8 @@
                     },
                     "expression": {
                       "type": "StringLiteral",
-                      "start": 52,
-                      "end": 70,
+                      "start": 41,
+                      "end": 59,
                       "loc": {
                         "start": {
                           "line": 3,

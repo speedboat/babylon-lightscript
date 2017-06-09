@@ -291,13 +291,7 @@ pp.parseExprOp = function(left, leftStartPos, leftStartLoc, minPrec, noIn) {
 // Parse unary operators, both prefix and postfix.
 
 pp.parseMaybeUnary = function (refShorthandDefaultPos) {
-  const matchCaseBinaryPlusMin = this.hasPlugin("lightscript") &&
-    this.state.inMatchCaseTest &&
-    this.match(tt.plusMin) &&
-    this.state.tokens[this.state.tokens.length - 1].value !== "!" &&
-    this.isNextCharWhitespace();
-
-  if (this.state.type.prefix && !matchCaseBinaryPlusMin) {
+  if (this.state.type.prefix) {
     if (this.hasPlugin("lightscript") && this.match(tt.plusMin)) {
       if (this.isNextCharWhitespace()) this.unexpected(null, "Unary +/- cannot be followed by a space in lightscript.");
     }
@@ -313,19 +307,7 @@ pp.parseMaybeUnary = function (refShorthandDefaultPos) {
     this.next();
 
     const argType = this.state.type;
-
-    // change precedence / allow autofill of `not` within `match` test
-    if (this.hasPlugin("lightscript") && node.operator === "!" && this.state.inMatchCaseTest && !argType.startsExpr) {
-      if (this.match(tt.colon) || this.match(tt.logicalOR) || this.match(tt.logicalAND)) {
-        // allow `| not:`, `| !!:`, `| not or x:`
-        node.argument = this.parseMatchCasePlaceholder();
-      } else {
-        // change precedence of `| not < 3:` to `!(x < 3)` from `(!x) < 3`
-        node.argument = this.parseExprOps();
-      }
-    } else {
-      node.argument = this.parseMaybeUnary();
-    }
+    node.argument = this.parseMaybeUnary();
 
     this.addExtra(node, "parenthesizedArgument", argType === tt.parenL && (!node.argument.extra || !node.argument.extra.parenthesized));
 
@@ -763,14 +745,11 @@ pp.parseExprAtom = function (refShorthandDefaultPos) {
       }
 
     case tt.dot:
-      if (this.hasPlugin("lightscript") && this.lookahead().type === tt.num && !this.allowMatchCasePlaceholder()) {
+      if (this.hasPlugin("lightscript") && this.lookahead().type === tt.num) {
         this.unexpected(null, "Decimal numbers must be prefixed with a `0` in LightScript (eg; `0.1`).");
       }
 
     default:
-      if (this.hasPlugin("lightscript") && this.allowMatchCasePlaceholder()) {
-        return this.parseMatchCasePlaceholder();
-      }
       this.unexpected();
   }
 };

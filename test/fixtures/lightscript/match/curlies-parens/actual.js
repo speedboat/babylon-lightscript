@@ -1,4 +1,4 @@
 a = match (x) {
-| > 2: "bigger than two"
+| 2: "eq two"
 | else: "some other thing"
 }

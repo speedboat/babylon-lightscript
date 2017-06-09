@@ -655,66 +655,6 @@ pp.parseMatchCaseTest = function (node) {
   this.state.inMatchCaseTest = false;
 };
 
-pp.isBinaryTokenForMatchCase = function (tokenType) {
-  return (
-    tokenType.binop != null &&
-    tokenType !== tt.logicalOR &&
-    tokenType !== tt.logicalAND &&
-    tokenType !== tt.bitwiseOR
-  );
-};
-
-pp.isSubscriptTokenForMatchCase = function (tokenType) {
-  return (
-    tokenType === tt.dot ||
-    tokenType === tt.elvis ||
-    tokenType === tt.tilde
-  );
-};
-
-pp.allowMatchCasePlaceholder = function () {
-  if (!this.state.inMatchCaseTest) {
-    return false;
-  }
-  const cur = this.state.type;
-  const prev = this.state.tokens[this.state.tokens.length - 1].type;
-
-  // don't allow two binary tokens in a row to use placeholders, eg; `+ *`
-  if (this.isBinaryTokenForMatchCase(cur)) {
-    return !this.isBinaryTokenForMatchCase(prev);
-  }
-  // don't allow two subscripts in a row to use placeholders, eg; `..`
-  if (this.isSubscriptTokenForMatchCase(cur)) {
-    return !this.isSubscriptTokenForMatchCase(prev);
-  }
-  return false;
-};
-
-pp.parseMatchCaseTestPattern = function () {
-  if (!this.state.allowMatchCaseTestPattern) {
-    this.unexpected(null, "Only one pattern allowed per match case test.");
-  }
-
-  const oldInMatchCaseTestPattern = this.state.inMatchCaseTestPattern;
-  this.state.inMatchCaseTestPattern = true;
-
-  const node = this.parseBindingAtom();
-
-  // once we have finished recursing through a pattern, disallow future patterns
-  this.state.inMatchCaseTestPattern = oldInMatchCaseTestPattern;
-  if (this.state.inMatchCaseTestPattern === false) {
-    this.state.allowMatchCaseTestPattern = false;
-  }
-
-  return node;
-};
-
-pp.parseMatchCasePlaceholder = function () {
-  // use the blank space as an empty value (perhaps 0-length would be better)
-  const node = this.startNodeAt(this.state.lastTokEnd, this.state.lastTokEndLoc);
-  return this.finishNodeAt(node, "PlaceholderExpression", this.state.start, this.state.startLoc);
-};
-
 
 export default function (instance) {
 
