@@ -126,6 +126,8 @@ export const keywords = {
   "now": new KeywordTokenType("now", { beforeExpr }),
   "or": types.logicalOR,
   "and": types.logicalAND,
+  "is": types.equality,
+  "isnt": types.equality,
   "not": new KeywordTokenType("not", { beforeExpr, prefix, startsExpr }),
 
   "break": new KeywordTokenType("break"),

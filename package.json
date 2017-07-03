@@ -58,7 +58,7 @@
     "test-only": "ava",
     "test-ci": "nyc npm run test-only",
     "changelog": "git log `git describe --tags --abbrev=0`..HEAD --pretty=format:' * %s (%an)' | grep -v 'Merge pull request'",
-    "watch": "npm run clean && cross-env BABEL_ENV=watch babel src --out-dir lib --watch"
+    "watch": "npm run clean && cross-env BABEL_ENV=watch babel src --out-dir lib --watch -s"
   },
   "nyc": {
     "include": [

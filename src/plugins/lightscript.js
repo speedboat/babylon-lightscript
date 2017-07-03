@@ -57,6 +57,8 @@ const REMAPPED_OPERATORS = {
   "or": "||",
   "and": "&&",
   "not": "!",
+  "is": "===",
+  "isnt": "!=="
 };
 
 pp.rewriteOperator = function (node) {

@@ -187,9 +187,16 @@ pp.parseDecorator = function () {
     this.unexpected();
   }
   const node = this.startNode();
+  if (this.hasPlugin("lightscript")) {
+    this.state.inDecorator = true
+  }
   this.next();
   node.expression = this.parseMaybeAssign();
-  return this.finishNode(node, "Decorator");
+  let n = this.finishNode(node, "Decorator");
+  if (this.hasPlugin("lightscript")) {
+    this.state.inDecorator = false
+  }
+  return n
 };
 
 pp.parseBreakContinueStatement = function (node, keyword) {

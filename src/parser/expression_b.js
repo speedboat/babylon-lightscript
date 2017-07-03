@@ -356,30 +356,6 @@ pp.parseExprSubscripts = function (refShorthandDefaultPos) {
   return this.parseSubscripts(expr, startPos, startLoc);
 };
 
-const flowReservedWords = ["type", "declare", "interface", "implements", "extends", "class"];
-
-pp.seemsLikeFunctionCall = function(base, noCalls) {
-  return (!noCalls && !this.isLineBreak() && (this.match(tt.name) || this.match(tt.string) || this.match(tt.num))
-    && (
-        !reservedWords.strict(base.name)
-      && !reservedWords[6](base.name)
-      && !reservedWords.strictBind(base.name)
-      && !reservedWords.strict(this.state.value)
-      && base.name !== "static"
-      && (base.type === "Identifier" || base.type === "MemberExpression")
-      && flowReservedWords.indexOf(base.name) === -1
-      && !this.isContextual("of")
-      && !this.isContextual("from")
-      && !this.isContextual("enum")
-      && !this.match(tt._in)
-      && !this.isKeyword(this.state.value)
-      && !this.isKeyword(base.name)
-      && base.name !== "from"
-      && !this.state.inDecorator
-    )
-  )
-}
-
 pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
   for (;;) {
     if (!noCalls && this.eat(tt.doubleColon)) {
@@ -463,22 +439,15 @@ pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
       node.computed = true;
       this.expect(tt.bracketR);
       base = this.finishNode(node, "MemberExpression");
-    //} else if (!noCalls && this.match(tt.parenL) && !(this.hasPlugin("lightscript") && this.isLineBreak())) {
-    } else if ((!noCalls && this.match(tt.parenL) && !(this.hasPlugin("lightscript") && this.isLineBreak()))
-      || (this.hasPlugin("lightscript") && this.seemsLikeFunctionCall(base, noCalls))
-      ) {
-      const isParenthesized = this.match(tt.parenL);
+    } else if (!noCalls && this.match(tt.parenL) && !(this.hasPlugin("lightscript") && this.isLineBreak())) {
       const possibleAsync = this.state.potentialArrowAt === base.start && base.type === "Identifier" && base.name === "async" && !this.canInsertSemicolon();
       const possibleArrow = possibleAsync || this.hasPlugin("lightscript");
       const refShorthandDefaultPos = possibleArrow ? { start: 0 } : undefined;
-      if (isParenthesized) {
-        this.next();
-      }
-
+      this.next();
 
       const node = this.startNodeAt(startPos, startLoc);
       node.callee = base;
-      node.arguments = this.parseCallExpressionArguments(tt.parenR, possibleArrow, refShorthandDefaultPos, isParenthesized);
+      node.arguments = this.parseCallExpressionArguments(tt.parenR, possibleArrow, refShorthandDefaultPos);
       if (node.callee.type === "Import" && node.arguments.length !== 1) {
         this.raise(node.start, "import() requires exactly one argument");
       }
@@ -534,28 +503,15 @@ pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
   }
 };
 
-
-pp.isFunctionCallEnded = function(isParenthesized) {
-  if (this.hasPlugin("lightscript")) {
-    return (this.isLineBreak()
-      || this.match(tt.eof)
-      || this.match(tt.semi)
-      || this.match(tt.braceR)
-    ) && !isParenthesized
-  } else {
-    return false
-  }
-}
-
 // last parameter (refShorthandDefaultPos) added for lightscript,
 // but should be contributed upstream because it fixes a minor bug in babylon:
 // `async({ foo = 1 })` parses as a function call but should raise an error.
-pp.parseCallExpressionArguments = function (close, possibleAsyncArrow, refShorthandDefaultPos, isParenthesized) {
+pp.parseCallExpressionArguments = function (close, possibleAsyncArrow, refShorthandDefaultPos) {
   const elts = [];
   let innerParenStart;
   let first = true;
 
-  while (!this.eat(close) && !this.isFunctionCallEnded(isParenthesized)) {
+  while (!this.eat(close)) {
     if (first) {
       first = false;
     } else {
@@ -564,7 +520,7 @@ pp.parseCallExpressionArguments = function (close, possibleAsyncArrow, refShorth
       } else {
         this.expect(tt.comma);
       }
-      if (this.eat(close) || this.isFunctionCallEnded(isParenthesized)) break;
+      if (this.eat(close)) break;
     }
 
     // we need to make sure that if this is an async arrow functions, that we don't allow inner parens inside the params
@@ -609,7 +565,6 @@ pp.parseNoCallExpr = function () {
 // or `{}`.
 
 pp.parseExprAtom = function (refShorthandDefaultPos) {
-  //console.log(this.state.type)
   const canBeArrow = this.state.potentialArrowAt === this.state.start;
   let node;
 
