@@ -97,6 +97,9 @@ pp.parseEnhancedForIn = function (node) {
 
   const iterable = this.parseMaybeAssign(true);
 
+  if (this.hasPlugin("lightscript")) {
+    this.state.inForExpression = false;
+  }
   this.expectParenFreeBlockStart(node);
   node.body = this.parseStatement(false);
 
@@ -146,11 +149,11 @@ pp.parseInlineWhiteBlock = function(node) {
 };
 
 pp.parseMultilineWhiteBlock = function(node, indentLevel) {
+
   this.parseBlockBody(node, false, false, indentLevel);
   if (!node.body.length) {
     this.unexpected(node.start, "Expected an Indent or Statement");
   }
-
   this.addExtra(node, "curly", false);
   return this.finishNode(node, "BlockStatement");
 };
@@ -480,6 +483,11 @@ pp.parseIfExpression = function (node) {
 // c/p parseAwait
 
 pp.parseSafeAwait = function (node) {
+  if (this.state.currentFunction) {
+    this.state.currentFunction.async = true;
+    this.state.isAsync = true;
+  }
+
   if (!this.state.inAsync) this.unexpected();
   node.argument = this.parseMaybeUnary();
   return this.finishNode(node, "SafeAwaitExpression");

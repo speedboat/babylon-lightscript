@@ -137,7 +137,6 @@ pp.parseStatement = function (declaration, topLevel) {
   // Identifier node, we switch to interpreting it as a label.
   const maybeName = this.state.value;
   const expr = this.parseExpression();
-
   // rewrite `x = val` and `x: type = val`
   if (this.hasPlugin("lightscript") && this.isColonConstAssign(expr)) {
     const decl = this.rewriteAssignmentAsDeclarator(expr);
@@ -188,15 +187,14 @@ pp.parseDecorator = function () {
   }
   const node = this.startNode();
   if (this.hasPlugin("lightscript")) {
-    this.state.inDecorator = true
+    this.state.inDecorator = true;
   }
   this.next();
   node.expression = this.parseMaybeAssign();
-  let n = this.finishNode(node, "Decorator");
   if (this.hasPlugin("lightscript")) {
-    this.state.inDecorator = false
+    this.state.inDecorator = false;
   }
-  return n
+  return this.finishNode(node, "Decorator");
 };
 
 pp.parseBreakContinueStatement = function (node, keyword) {
@@ -276,6 +274,9 @@ pp.parseDoStatement = function (node) {
 // is a regular `for` loop.
 
 pp.parseForStatement = function (node) {
+  if (this.hasPlugin("lightscript")) {
+    this.state.inForExpression = true;
+  }
   this.next();
   this.state.labels.push(loopLabel);
 
@@ -667,6 +668,9 @@ pp.parseFor = function (node, init) {
   } else {
     this.expect(tt.parenR);
   }
+  if (this.hasPlugin("lightscript")) {
+    this.state.inForExpression = false;
+  }
 
   node.body = this.parseStatement(false);
   this.state.labels.pop();
@@ -692,6 +696,9 @@ pp.parseForIn = function (node, init, forAwait) {
     this.expectParenFreeBlockStart(node);
   } else {
     this.expect(tt.parenR);
+  }
+  if (this.hasPlugin("lightscript")) {
+    this.state.inForExpression = false;
   }
 
   node.body = this.parseStatement(false);
@@ -737,6 +744,9 @@ pp.parseFunction = function (node, isStatement, allowExpressionBody, isAsync, op
   this.state.inMethod = false;
 
   this.initFunction(node, isAsync);
+  if (this.hasPlugin("lightscript")) {
+    this.state.currentFunction = node;
+  }
 
   if (this.match(tt.star)) {
     if (node.async && !this.hasPlugin("asyncGenerators")) {
@@ -772,10 +782,16 @@ pp.parseFunctionParams = function (node) {
 // `isStatement` parameter).
 
 pp.parseClass = function (node, isStatement, optionalId) {
+  if (this.hasPlugin("lightscript")) {
+    this.state.inClassExpression = true;
+  }
   this.next();
   this.takeDecorators(node);
   this.parseClassId(node, isStatement, optionalId);
   this.parseClassSuper(node);
+  if (this.hasPlugin("lightscript")) {
+    this.state.inClassExpression = false;
+  }
   this.parseClassBody(node);
   return this.finishNode(node, isStatement ? "ClassDeclaration" : "ClassExpression");
 };
@@ -824,6 +840,7 @@ pp.parseClassBody = function (node) {
     }
 
     const method = this.startNode();
+    this.state.currentFunction = method;
 
     // steal the decorators if there are any
     if (decorators.length) {
