@@ -1,3 +1,12 @@
+/*require("babel-core/register")({
+  "presets": [
+    ["es2015"],
+    "stage-0"
+  ],
+  "plugins": [
+    "transform-flow-strip-types"
+  ]
+});*/
 const parser = require("./");
 const path = require("path");
 const fs = require("fs");
@@ -27,15 +36,11 @@ if (fs.existsSync(opt)) {
 const code = fs.readFileSync(actual, 'utf-8');
 let result;
 try {
-   result = parser.parse(code, {
+   result = parser.parse(code.trim(), {
     plugins: [
       "lightscript",
-      "decorators",
-      "transform-async-to-generator",
       "flow",
-      "jsx",
-      "transform-class-properties",
-      "transform-decorators-legacy"
+      "jsx"
     ]
   });
   delete result.tokens;
@@ -50,6 +55,16 @@ try {
 }
  
 
-
+process.on('exit', (code) => {
+    // this force terminates the debugger by attaching to the debugger socket via it's FD and destroying it!
+    try {
+        new require('net').Socket({
+            fd: parseInt(
+                require('child_process').spawnSync('lsof', ['-np', process.pid], {encoding:'utf8'})
+                    .stdout.match(/^.+?\sTCP\s+127.0.0.1:\d+->127.0.0.1:\d+\s+\(ESTABLISHED\)/m)[0].split(/\s+/)[3]
+                , 10)
+        }).destroy();
+    } catch(e) {}
+});
 
 console.log(JSON.stringify(result, null, 2));

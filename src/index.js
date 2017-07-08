@@ -2,7 +2,11 @@ import Parser, { plugins } from "./parser";
 import "./parser/util";
 import "./parser/statement";
 import "./parser/lval";
-import "./parser/expression";
+if (process.env.USE_ORIGINAL) {
+  require("./parser/expression_b");
+} else {
+  require("./parser/expression");
+}
 import "./parser/node";
 import "./parser/location";
 import "./parser/comments";

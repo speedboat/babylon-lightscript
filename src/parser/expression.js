@@ -359,6 +359,26 @@ pp.parseExprSubscripts = function (refShorthandDefaultPos) {
 const flowReservedWords = ["type", "declare", "interface", "implements", "extends", "class"];
 const otherReservedWords = ["of", "from", "enum", "in"];
 
+pp.seemsLikeFunctionArgument = function() {
+  const state = this.state.clone();
+  try {
+    const testNode = this.parseExprListItem();
+    this.state = state;
+    return (
+      testNode.type === "Identifier" ||
+      testNode.type === "StringLiteral" ||
+      testNode.type === "ObjectExpression" ||
+      testNode.type === "NumericLiteral" ||
+      testNode.type === "ArrayExpression" ||
+      testNode.type === "ArrowFunctionExpression" ||
+      testNode.type === "CallExpression"
+    );
+  } catch (e) {
+    this.state = state;
+    return false;
+  }
+}
+
 pp.seemsLikeFunctionCall = function(base, noCalls) {
   if (this.state.lastTokEnd === this.state.start) {
     return false;
@@ -374,31 +394,32 @@ pp.seemsLikeFunctionCall = function(base, noCalls) {
       && !reservedWords[6](this.state.value)
       && !reservedWords.strict(this.state.value)
       && !reservedWords.strictBind(this.state.value)
-      && flowReservedWords.indexOf(base.name) === -1
-      && flowReservedWords.indexOf(this.state.value) === -1
-      && otherReservedWords.indexOf(base.name) === -1
       && otherReservedWords.indexOf(this.state.value) === -1
-      && !this.isKeyword(base.name)
+      && flowReservedWords.indexOf(this.state.value) === -1    
       && !this.isKeyword(this.state.value)
-      && !this.state.inDecorator
+      && !this.state.inDecorator  
+      
+      && !reservedWords[6](base.name)
+      && !reservedWords.strict(base.name)
+      && !reservedWords.strictBind(base.name)
+      && flowReservedWords.indexOf(base.name) === -1
+      && otherReservedWords.indexOf(base.name) === -1
+      && !this.isKeyword(base.name)
     )
   ) {
     return false
   }
-  try {
-    const testNode = this.parseExprAtom();
-    this.state = state;
-    return (
-      testNode.type === "Identifier" ||
-      testNode.type === "StringLiteral" ||
-      testNode.type === "ObjectExpression" ||
-      testNode.type === "NumericLiteral" ||
-      testNode.type === "ArrayExpression"
-    );
-  } catch (e) {
+
+  this.eat(tt.parenL);
+  if (this.match(tt.parenR)) {
     this.state = state;
     return false;
   }
+  const isArgument = this.seemsLikeFunctionArgument();
+  this.state = state;
+  return isArgument;
+  
+    
 
   return (!noCalls
     && !this.isLineBreak()
@@ -427,6 +448,25 @@ pp.hasSpaceBetweenTokens = function() {
   if (!this.hasPlugin("lightscript")) {return false}
   return (!(this.state.lastTokEnd === this.state.start))
 };
+
+pp.isFunctionCallOrAsync = function(base, noCalls) {
+  if (noCalls) {return false}
+  if (this.match(tt.parenL) && !this.hasSpaceBetweenTokens()) {
+    return true
+  }
+
+  if (this.hasPlugin("lightscript")) {
+    if (this.isLineBreak() || !this.hasSpaceBetweenTokens()) {
+      return false
+    } else {
+      const possibleAsync = this.state.potentialArrowAt === base.start && base.type === "Identifier" && base.name === "async" && !this.canInsertSemicolon();
+      return this.seemsLikeFunctionCall(base, noCalls) || possibleAsync
+    }
+  } else {
+    return false
+  }
+}
+
 
 pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
   for (;;) {
@@ -509,20 +549,18 @@ pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
       node.computed = true;
       this.expect(tt.bracketR);
       base = this.finishNode(node, "MemberExpression");
-    } else if ((!noCalls && this.match(tt.parenL) && !(this.hasPlugin("lightscript") && this.isLineBreak()))
-      || (this.hasPlugin("lightscript") && this.seemsLikeFunctionCall(base, noCalls))
-      ) {
-      const isParenthesized = this.match(tt.parenL);
+    } else if (this.isFunctionCallOrAsync(base, noCalls)) {
+      const isParenthesized = this.match(tt.parenL) && !this.hasSpaceBetweenTokens();
       const possibleAsync = this.state.potentialArrowAt === base.start && base.type === "Identifier" && base.name === "async" && !this.canInsertSemicolon();
       const possibleArrow = possibleAsync || this.hasPlugin("lightscript");
       const refShorthandDefaultPos = possibleArrow ? { start: 0 } : undefined;
-      if (isParenthesized) {
+      if (isParenthesized || possibleAsync) {
         this.next();
       }
 
       const node = this.startNodeAt(startPos, startLoc);
       node.callee = base;
-      node.arguments = this.parseCallExpressionArguments(tt.parenR, possibleArrow, refShorthandDefaultPos, isParenthesized);
+      node.arguments = this.parseCallExpressionArguments(tt.parenR, possibleArrow, refShorthandDefaultPos, !(possibleAsync || isParenthesized));
       if (node.callee.type === "Import" && node.arguments.length !== 1) {
         this.raise(node.start, "import() requires exactly one argument");
       }
@@ -578,27 +616,35 @@ pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
   }
 };
 
-pp.isFunctionCallEnded = function(isParenthesized) {
-  if (this.hasPlugin("lightscript")) {
-    return (this.isLineBreak()
-      || this.match(tt.eof)
-      || this.match(tt.semi)
-      || this.match(tt.braceR)
-    ) && !isParenthesized;
-  } else {
-    return false;
+pp.isFunctionCallEnded = function(parentless, refShorthandDefaultPos) {
+  if (this.hasPlugin("lightscript") && parentless) {
+    if (this.isLineBreak() || this.match(tt.eof) || this.match(tt.semi)  || this.match(tt.braceR)) {
+      return true;
+    }
+    const state = this.state.clone();
+    const isArgument = this.seemsLikeFunctionArgument();
+    return !isArgument;
   }
+  return false;
 };
 
 // last parameter (refShorthandDefaultPos) added for lightscript,
 // but should be contributed upstream because it fixes a minor bug in babylon:
 // `async({ foo = 1 })` parses as a function call but should raise an error.
-pp.parseCallExpressionArguments = function (close, possibleAsyncArrow, refShorthandDefaultPos, isParenthesized) {
+pp.parseCallExpressionArguments = function (close, possibleAsyncArrow, refShorthandDefaultPos, parentless) {
   const elts = [];
   let innerParenStart;
   let first = true;
 
-  while (!this.eat(close) && !this.isFunctionCallEnded(isParenthesized)) {
+  const eatParenIfPareneesized = function () {
+    if (parentless) {
+      return false;
+    } else {
+      return this.eat(close);
+    }
+  }
+
+  while (!eatParenIfPareneesized.call(this) && !this.isFunctionCallEnded(parentless, refShorthandDefaultPos)) {
     if (first) {
       first = false;
     } else {
@@ -607,7 +653,7 @@ pp.parseCallExpressionArguments = function (close, possibleAsyncArrow, refShorth
       } else {
         this.expect(tt.comma);
       }
-      if (this.eat(close) || this.isFunctionCallEnded(isParenthesized)) break;
+      if (eatParenIfPareneesized.call(this) || this.isFunctionCallEnded(parentless, refShorthandDefaultPos)) break;
     }
 
     // we need to make sure that if this is an async arrow functions, that we don't allow inner parens inside the params
@@ -711,7 +757,13 @@ pp.parseExprAtom = function (refShorthandDefaultPos) {
       }
 
       if (canBeArrow && !this.canInsertSemicolon() && this.match(tt.arrow)) {
-        return this.parseArrowExpression(node, [id]);
+        if (this.hasPlugin("lightscript")) {
+          if (!this.hasSpaceBetweenTokens()) {
+            return this.parseArrowExpression(node, [id]); 
+          }
+        } else {
+          return this.parseArrowExpression(node, [id]);
+        }
       }
 
       return id;

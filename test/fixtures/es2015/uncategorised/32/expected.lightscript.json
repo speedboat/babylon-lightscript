@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 6,
+  "end": 12,
   "loc": {
     "start": {
       "line": 1,
@@ -9,13 +9,13 @@
     },
     "end": {
       "line": 1,
-      "column": 6
+      "column": 12
     }
   },
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 6,
+    "end": 12,
     "loc": {
       "start": {
         "line": 1,
@@ -23,7 +23,7 @@
       },
       "end": {
         "line": 1,
-        "column": 6
+        "column": 12
       }
     },
     "sourceType": "script",
@@ -31,7 +31,7 @@
       {
         "type": "ExpressionStatement",
         "start": 0,
-        "end": 6,
+        "end": 12,
         "loc": {
           "start": {
             "line": 1,
@@ -39,13 +39,13 @@
           },
           "end": {
             "line": 1,
-            "column": 6
+            "column": 12
           }
         },
         "expression": {
           "type": "CallExpression",
           "start": 0,
-          "end": 6,
+          "end": 12,
           "loc": {
             "start": {
               "line": 1,
@@ -53,7 +53,7 @@
             },
             "end": {
               "line": 1,
-              "column": 6
+              "column": 12
             }
           },
           "callee": {
@@ -69,15 +69,15 @@
                 "line": 1,
                 "column": 1
               },
-              "identifierName": "a"
+              "identifierName": "e"
             },
-            "name": "a"
+            "name": "e"
           },
           "arguments": [
             {
               "type": "ArrowFunctionExpression",
               "start": 2,
-              "end": 6,
+              "end": 12,
               "loc": {
                 "start": {
                   "line": 1,
@@ -85,19 +85,19 @@
                 },
                 "end": {
                   "line": 1,
-                  "column": 6
+                  "column": 12
                 }
               },
               "id": null,
               "generator": false,
-              "expression": true,
+              "expression": false,
               "async": false,
               "params": [],
-              "skinny": true,
+              "skinny": false,
               "body": {
-                "type": "Identifier",
+                "type": "BlockStatement",
                 "start": 5,
-                "end": 6,
+                "end": 12,
                 "loc": {
                   "start": {
                     "line": 1,
@@ -105,11 +105,50 @@
                   },
                   "end": {
                     "line": 1,
-                    "column": 6
-                  },
-                  "identifierName": "b"
+                    "column": 12
+                  }
                 },
-                "name": "b"
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 7,
+                    "end": 10,
+                    "loc": {
+                      "start": {
+                        "line": 1,
+                        "column": 7
+                      },
+                      "end": {
+                        "line": 1,
+                        "column": 10
+                      }
+                    },
+                    "expression": {
+                      "type": "NumericLiteral",
+                      "start": 7,
+                      "end": 9,
+                      "loc": {
+                        "start": {
+                          "line": 1,
+                          "column": 7
+                        },
+                        "end": {
+                          "line": 1,
+                          "column": 9
+                        }
+                      },
+                      "extra": {
+                        "rawValue": 42,
+                        "raw": "42"
+                      },
+                      "value": 42
+                    }
+                  }
+                ],
+                "directives": [],
+                "extra": {
+                  "curly": true
+                }
               }
             }
           ]

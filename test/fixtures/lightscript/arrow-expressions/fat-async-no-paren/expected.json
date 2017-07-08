@@ -43,6 +43,9 @@
           }
         },
         "kind": "const",
+        "extra": {
+          "implicit": true
+        },
         "declarations": [
           {
             "type": "VariableDeclarator",
@@ -76,7 +79,7 @@
               "name": "a"
             },
             "init": {
-              "type": "ArrowFunctionExpression",
+              "type": "CallExpression",
               "start": 4,
               "end": 17,
               "loc": {
@@ -89,62 +92,78 @@
                   "column": 17
                 }
               },
-              "id": null,
-              "generator": false,
-              "expression": true,
-              "async": true,
-              "params": [
-                {
-                  "type": "Identifier",
-                  "start": 4,
-                  "end": 5,
-                  "loc": {
-                    "start": {
-                      "line": 1,
-                      "column": 4
-                    },
-                    "end": {
-                      "line": 1,
-                      "column": 5
-                    },
-                    "identifierName": "b"
-                  },
-                  "name": "b"
-                }
-              ],
-              "skinny": false,
-              "body": {
-                "type": "AwaitExpression",
-                "start": 10,
-                "end": 17,
+              "callee": {
+                "type": "Identifier",
+                "start": 4,
+                "end": 5,
                 "loc": {
                   "start": {
                     "line": 1,
-                    "column": 10
+                    "column": 4
                   },
                   "end": {
                     "line": 1,
-                    "column": 17
-                  }
+                    "column": 5
+                  },
+                  "identifierName": "b"
                 },
-                "argument": {
-                  "type": "Identifier",
-                  "start": 16,
+                "name": "b"
+              },
+              "arguments": [
+                {
+                  "type": "ArrowFunctionExpression",
+                  "start": 6,
                   "end": 17,
                   "loc": {
                     "start": {
                       "line": 1,
-                      "column": 16
+                      "column": 6
                     },
                     "end": {
                       "line": 1,
                       "column": 17
-                    },
-                    "identifierName": "b"
+                    }
                   },
-                  "name": "b"
+                  "id": null,
+                  "generator": false,
+                  "expression": true,
+                  "async": true,
+                  "params": [],
+                  "skinny": false,
+                  "body": {
+                    "type": "AwaitExpression",
+                    "start": 10,
+                    "end": 17,
+                    "loc": {
+                      "start": {
+                        "line": 1,
+                        "column": 10
+                      },
+                      "end": {
+                        "line": 1,
+                        "column": 17
+                      }
+                    },
+                    "argument": {
+                      "type": "Identifier",
+                      "start": 16,
+                      "end": 17,
+                      "loc": {
+                        "start": {
+                          "line": 1,
+                          "column": 16
+                        },
+                        "end": {
+                          "line": 1,
+                          "column": 17
+                        },
+                        "identifierName": "b"
+                      },
+                      "name": "b"
+                    }
+                  }
                 }
-              }
+              ]
             }
           }
         ]

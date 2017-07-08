@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 6,
+  "end": 5,
   "loc": {
     "start": {
       "line": 1,
@@ -9,13 +9,13 @@
     },
     "end": {
       "line": 1,
-      "column": 6
+      "column": 5
     }
   },
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 6,
+    "end": 5,
     "loc": {
       "start": {
         "line": 1,
@@ -23,7 +23,7 @@
       },
       "end": {
         "line": 1,
-        "column": 6
+        "column": 5
       }
     },
     "sourceType": "script",
@@ -31,7 +31,7 @@
       {
         "type": "ExpressionStatement",
         "start": 0,
-        "end": 6,
+        "end": 5,
         "loc": {
           "start": {
             "line": 1,
@@ -39,13 +39,13 @@
           },
           "end": {
             "line": 1,
-            "column": 6
+            "column": 5
           }
         },
         "expression": {
           "type": "CallExpression",
           "start": 0,
-          "end": 6,
+          "end": 5,
           "loc": {
             "start": {
               "line": 1,
@@ -53,7 +53,7 @@
             },
             "end": {
               "line": 1,
-              "column": 6
+              "column": 5
             }
           },
           "callee": {
@@ -75,9 +75,9 @@
           },
           "arguments": [
             {
-              "type": "ArrowFunctionExpression",
+              "type": "CallExpression",
               "start": 2,
-              "end": 6,
+              "end": 5,
               "loc": {
                 "start": {
                   "line": 1,
@@ -85,32 +85,45 @@
                 },
                 "end": {
                   "line": 1,
-                  "column": 6
+                  "column": 5
                 }
               },
-              "id": null,
-              "generator": false,
-              "expression": true,
-              "async": false,
-              "params": [],
-              "skinny": true,
-              "body": {
+              "callee": {
                 "type": "Identifier",
-                "start": 5,
-                "end": 6,
+                "start": 2,
+                "end": 3,
                 "loc": {
                   "start": {
                     "line": 1,
-                    "column": 5
+                    "column": 2
                   },
                   "end": {
                     "line": 1,
-                    "column": 6
+                    "column": 3
                   },
                   "identifierName": "b"
                 },
                 "name": "b"
-              }
+              },
+              "arguments": [
+                {
+                  "type": "Identifier",
+                  "start": 4,
+                  "end": 5,
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 4
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 5
+                    },
+                    "identifierName": "c"
+                  },
+                  "name": "c"
+                }
+              ]
             }
           ]
         }
