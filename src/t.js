@@ -18,40 +18,59 @@ const fs = require("fs");
 global.log = console.log.bind(this)
 
 const p = process.argv[2]
+const l = process.argv[3]
 if (!p) {
   throw new Error("Path argument required")
 }
 
-const sourceDir = path.resolve(process.cwd(), p);
-const actual = path.join(sourceDir, "actual.js");
-const exp = path.join(sourceDir, "expected.json");
-const opt = path.join(sourceDir, "options.json");
-if (fs.existsSync(exp)) {
-  fs.unlinkSync(exp);
+const clearContents = function(dirPath) {
+  const files = fs.readdirSync(dirPath);
+  if (files.length > 0)
+    for (var i = 0; i < files.length; i++) {
+      var filePath = dirPath + '/' + files[i];
+      if (fs.statSync(filePath).isFile() && (path.basename(filePath).indexOf("actual.js") == -1))
+        fs.unlinkSync(filePath);
+    }
 };
-if (fs.existsSync(opt)) {
-  fs.unlinkSync(opt);
+
+const sourceDir = path.resolve(process.cwd(), p);
+//clearContents(sourceDir);
+const actual = path.join(sourceDir, "actual.js");
+
+let exp, opt;
+
+if (l) {
+  exp = path.join(sourceDir, "expected.lightscript.json");
+  opt = path.join(sourceDir, "options.lightscript.json");
+} else {
+  exp = path.join(sourceDir, "expected.json");
+  opt = path.join(sourceDir, "options.json");
 }
 
 const code = fs.readFileSync(actual, 'utf-8');
 let result;
 try {
-   result = parser.parse(code.trim(), {
+   result = parser.parse(code.replace(/\n$/g, ""), {
     plugins: [
       "lightscript",
       "flow",
-      "jsx"
+      "jsx",
+      "decorators",
+      "transform-async-to-generator",
+      "transform-class-properties",
+      "transform-decorators-legacy"
     ]
   });
+  
   delete result.tokens;
   delete result.comments;
-  fs.writeFileSync(path.join(sourceDir, "expected.json"), JSON.stringify(result, null, 2));
+  fs.writeFileSync(exp, JSON.stringify(result, null, 2));
 
 } catch (e) {
   result = {
     throws: e.message
   }
-  fs.writeFileSync(path.join(sourceDir, "options.json"), JSON.stringify(result, null, 2));
+  fs.writeFileSync(opt, JSON.stringify(result, null, 2));
 }
  
 

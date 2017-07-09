@@ -75,7 +75,7 @@
           },
           "operator": "+",
           "right": {
-            "type": "MemberExpression",
+            "type": "CallExpression",
             "start": 8,
             "end": 17,
             "loc": {
@@ -88,7 +88,7 @@
                 "column": 7
               }
             },
-            "object": {
+            "callee": {
               "type": "Identifier",
               "start": 8,
               "end": 9,
@@ -105,24 +105,42 @@
               },
               "name": "b"
             },
-            "property": {
-              "type": "Identifier",
-              "start": 15,
-              "end": 16,
-              "loc": {
-                "start": {
-                  "line": 2,
-                  "column": 5
+            "arguments": [
+              {
+                "type": "ArrayExpression",
+                "start": 14,
+                "end": 17,
+                "loc": {
+                  "start": {
+                    "line": 2,
+                    "column": 4
+                  },
+                  "end": {
+                    "line": 2,
+                    "column": 7
+                  }
                 },
-                "end": {
-                  "line": 2,
-                  "column": 6
-                },
-                "identifierName": "b"
-              },
-              "name": "b"
-            },
-            "computed": true
+                "elements": [
+                  {
+                    "type": "Identifier",
+                    "start": 15,
+                    "end": 16,
+                    "loc": {
+                      "start": {
+                        "line": 2,
+                        "column": 5
+                      },
+                      "end": {
+                        "line": 2,
+                        "column": 6
+                      },
+                      "identifierName": "b"
+                    },
+                    "name": "b"
+                  }
+                ]
+              }
+            ]
           }
         }
       }

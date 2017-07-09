@@ -361,6 +361,7 @@ const otherReservedWords = ["of", "from", "enum", "in"];
 
 pp.seemsLikeFunctionArgument = function() {
   const state = this.state.clone();
+  this.eat(tt.comma);
   try {
     const testNode = this.parseExprListItem();
     this.state = state;
@@ -379,18 +380,22 @@ pp.seemsLikeFunctionArgument = function() {
   }
 }
 
+pp.isNonIndentedBreak = function() {
+  return this.isNonIndentedBreakFrom(this.state.lastTokStart);
+}
+
 pp.seemsLikeFunctionCall = function(base, noCalls) {
-  if (this.state.lastTokEnd === this.state.start) {
+  /*if (this.state.lastTokEnd === this.state.start) {
     return false;
-  }
+  }*/
   if (this.state.inForExpression || this.state.inClassExpression) {
     return false;
   }
   const state = this.state.clone()
   if (
     !(
-      !this.isLineBreak()
-      && (base.type === "Identifier" || base.type === "MemberExpression")
+      !this.isNonIndentedBreak()
+      && (base.type === "Identifier" || base.type === "MemberExpression" || base.type === "CallExpression")
       && !reservedWords[6](this.state.value)
       && !reservedWords.strict(this.state.value)
       && !reservedWords.strictBind(this.state.value)
@@ -399,9 +404,9 @@ pp.seemsLikeFunctionCall = function(base, noCalls) {
       && !this.isKeyword(this.state.value)
       && !this.state.inDecorator  
       
-      && !reservedWords[6](base.name)
-      && !reservedWords.strict(base.name)
-      && !reservedWords.strictBind(base.name)
+      //&& !reservedWords[6](base.name)
+      //&& !reservedWords.strict(base.name)
+      //&& !reservedWords.strictBind(base.name)
       && flowReservedWords.indexOf(base.name) === -1
       && otherReservedWords.indexOf(base.name) === -1
       && !this.isKeyword(base.name)
@@ -456,7 +461,7 @@ pp.isFunctionCallOrAsync = function(base, noCalls) {
   }
 
   if (this.hasPlugin("lightscript")) {
-    if (this.isLineBreak() || !this.hasSpaceBetweenTokens()) {
+    if (this.isNonIndentedBreak() || !this.hasSpaceBetweenTokens()) {
       return false
     } else {
       const possibleAsync = this.state.potentialArrowAt === base.start && base.type === "Identifier" && base.name === "async" && !this.canInsertSemicolon();
@@ -616,9 +621,10 @@ pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
   }
 };
 
+
 pp.isFunctionCallEnded = function(parentless, refShorthandDefaultPos) {
   if (this.hasPlugin("lightscript") && parentless) {
-    if (this.isLineBreak() || this.match(tt.eof) || this.match(tt.semi)  || this.match(tt.braceR)) {
+    if (this.isNonIndentedBreak() || this.match(tt.eof) || this.match(tt.semi)  || this.match(tt.braceR)) {
       return true;
     }
     const state = this.state.clone();
@@ -673,7 +679,7 @@ pp.parseCallExpressionArguments = function (close, possibleAsyncArrow, refShorth
 };
 
 pp.shouldParseAsyncArrow = function () {
-  if (this.hasPlugin("lightscript") && this.isLineBreak()) {
+  if (this.hasPlugin("lightscript") && (this.isLineBreak())) {
     return false;
   }
   return this.match(tt.arrow);

@@ -1,2 +1,2 @@
-switch x:
-  12: log(6)
+class x:
+  some() -> return 12
