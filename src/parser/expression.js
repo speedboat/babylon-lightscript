@@ -390,8 +390,7 @@ pp.seemsLikeFunctionCall = function(base, noCalls) {
   }*/
   if (this.state.inForExpression || this.state.inClassExpression) {
     return false;
-  }
-  const state = this.state.clone()
+  };
   if (
     !(
       !this.isNonIndentedBreak()
@@ -415,38 +414,17 @@ pp.seemsLikeFunctionCall = function(base, noCalls) {
     return false
   }
 
-  this.eat(tt.parenL);
+  const state = this.state.clone()
+  /*this.eat(tt.parenL);
   if (this.match(tt.parenR)) {
     this.state = state;
     return false;
   }
+  */
+  
   const isArgument = this.seemsLikeFunctionArgument();
   this.state = state;
   return isArgument;
-  
-    
-
-  return (!noCalls
-    && !this.isLineBreak()
-    && (base.type === "Identifier" || base.type === "MemberExpression")
-    && (
-      this.match(tt.name) 
-      || this.match(tt.string) 
-      || this.match(tt.num) 
-      || this.match(tt.braceL)
-      || this.match(tt.bracketL)
-    )
-    && !reservedWords[6](this.state.value)
-    && !reservedWords.strict(this.state.value)
-    && !reservedWords.strictBind(this.state.value)
-    && flowReservedWords.indexOf(base.name) === -1
-    && flowReservedWords.indexOf(this.state.value) === -1
-    && otherReservedWords.indexOf(base.name) === -1
-    && otherReservedWords.indexOf(this.state.value) === -1
-    && !this.isKeyword(base.name)
-    && !this.isKeyword(this.state.value)
-    && !this.state.inDecorator
-  ); 
 };
 
 pp.hasSpaceBetweenTokens = function() {
@@ -679,7 +657,7 @@ pp.parseCallExpressionArguments = function (close, possibleAsyncArrow, refShorth
 };
 
 pp.shouldParseAsyncArrow = function () {
-  if (this.hasPlugin("lightscript") && (this.isLineBreak())) {
+  if (this.hasPlugin("lightscript") && (this.isLineBreak() || this.hasSpaceBetweenTokens())) {
     return false;
   }
   return this.match(tt.arrow);

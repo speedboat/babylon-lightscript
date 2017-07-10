@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 38,
+  "end": 37,
   "loc": {
     "start": {
       "line": 1,
@@ -15,7 +15,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 38,
+    "end": 37,
     "loc": {
       "start": {
         "line": 1,
@@ -31,7 +31,7 @@
       {
         "type": "NamedArrowDeclaration",
         "start": 0,
-        "end": 38,
+        "end": 37,
         "loc": {
           "start": {
             "line": 1,
@@ -66,12 +66,12 @@
         "skinny": true,
         "body": {
           "type": "BlockStatement",
-          "start": 5,
-          "end": 38,
+          "start": 4,
+          "end": 37,
           "loc": {
             "start": {
               "line": 1,
-              "column": 5
+              "column": 4
             },
             "end": {
               "line": 6,
@@ -81,8 +81,8 @@
           "body": [
             {
               "type": "VariableDeclaration",
-              "start": 10,
-              "end": 19,
+              "start": 9,
+              "end": 18,
               "loc": {
                 "start": {
                   "line": 2,
@@ -94,11 +94,14 @@
                 }
               },
               "kind": "const",
+              "extra": {
+                "implicit": true
+              },
               "declarations": [
                 {
                   "type": "VariableDeclarator",
-                  "start": 10,
-                  "end": 15,
+                  "start": 9,
+                  "end": 14,
                   "loc": {
                     "start": {
                       "line": 2,
@@ -111,8 +114,8 @@
                   },
                   "id": {
                     "type": "Identifier",
-                    "start": 10,
-                    "end": 11,
+                    "start": 9,
+                    "end": 10,
                     "loc": {
                       "start": {
                         "line": 2,
@@ -128,8 +131,8 @@
                   },
                   "init": {
                     "type": "NumericLiteral",
-                    "start": 14,
-                    "end": 15,
+                    "start": 13,
+                    "end": 14,
                     "loc": {
                       "start": {
                         "line": 2,
@@ -151,8 +154,8 @@
             },
             {
               "type": "BlockStatement",
-              "start": 19,
-              "end": 34,
+              "start": 18,
+              "end": 33,
               "loc": {
                 "start": {
                   "line": 3,
@@ -166,8 +169,8 @@
               "body": [
                 {
                   "type": "VariableDeclaration",
-                  "start": 25,
-                  "end": 30,
+                  "start": 24,
+                  "end": 29,
                   "loc": {
                     "start": {
                       "line": 4,
@@ -179,11 +182,14 @@
                     }
                   },
                   "kind": "const",
+                  "extra": {
+                    "implicit": true
+                  },
                   "declarations": [
                     {
                       "type": "VariableDeclarator",
-                      "start": 25,
-                      "end": 30,
+                      "start": 24,
+                      "end": 29,
                       "loc": {
                         "start": {
                           "line": 4,
@@ -196,8 +202,8 @@
                       },
                       "id": {
                         "type": "Identifier",
-                        "start": 25,
-                        "end": 26,
+                        "start": 24,
+                        "end": 25,
                         "loc": {
                           "start": {
                             "line": 4,
@@ -213,8 +219,8 @@
                       },
                       "init": {
                         "type": "NumericLiteral",
-                        "start": 29,
-                        "end": 30,
+                        "start": 28,
+                        "end": 29,
                         "loc": {
                           "start": {
                             "line": 4,
@@ -242,8 +248,8 @@
             },
             {
               "type": "ExpressionStatement",
-              "start": 37,
-              "end": 38,
+              "start": 36,
+              "end": 37,
               "loc": {
                 "start": {
                   "line": 6,
@@ -256,8 +262,8 @@
               },
               "expression": {
                 "type": "Identifier",
-                "start": 37,
-                "end": 38,
+                "start": 36,
+                "end": 37,
                 "loc": {
                   "start": {
                     "line": 6,

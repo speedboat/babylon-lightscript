@@ -1,2 +1,2 @@
-a(x) -/>
+a(x)-/>
   now x <- fetch()

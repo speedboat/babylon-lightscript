@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 21,
+  "end": 20,
   "loc": {
     "start": {
       "line": 1,
@@ -15,7 +15,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 21,
+    "end": 20,
     "loc": {
       "start": {
         "line": 1,
@@ -31,7 +31,7 @@
       {
         "type": "NamedArrowDeclaration",
         "start": 0,
-        "end": 21,
+        "end": 20,
         "loc": {
           "start": {
             "line": 1,
@@ -66,12 +66,12 @@
         "skinny": true,
         "body": {
           "type": "BlockStatement",
-          "start": 5,
-          "end": 21,
+          "start": 4,
+          "end": 20,
           "loc": {
             "start": {
               "line": 1,
-              "column": 5
+              "column": 4
             },
             "end": {
               "line": 2,
@@ -81,8 +81,8 @@
           "body": [
             {
               "type": "VariableDeclaration",
-              "start": 10,
-              "end": 21,
+              "start": 9,
+              "end": 20,
               "loc": {
                 "start": {
                   "line": 2,
@@ -94,11 +94,14 @@
                 }
               },
               "kind": "const",
+              "extra": {
+                "implicit": true
+              },
               "declarations": [
                 {
                   "type": "VariableDeclarator",
-                  "start": 10,
-                  "end": 21,
+                  "start": 9,
+                  "end": 20,
                   "loc": {
                     "start": {
                       "line": 2,
@@ -111,8 +114,8 @@
                   },
                   "id": {
                     "type": "ObjectPattern",
-                    "start": 10,
-                    "end": 16,
+                    "start": 9,
+                    "end": 15,
                     "loc": {
                       "start": {
                         "line": 2,
@@ -126,8 +129,8 @@
                     "properties": [
                       {
                         "type": "ObjectProperty",
-                        "start": 11,
-                        "end": 12,
+                        "start": 10,
+                        "end": 11,
                         "loc": {
                           "start": {
                             "line": 2,
@@ -143,8 +146,8 @@
                         "computed": false,
                         "key": {
                           "type": "Identifier",
-                          "start": 11,
-                          "end": 12,
+                          "start": 10,
+                          "end": 11,
                           "loc": {
                             "start": {
                               "line": 2,
@@ -160,8 +163,8 @@
                         },
                         "value": {
                           "type": "Identifier",
-                          "start": 11,
-                          "end": 12,
+                          "start": 10,
+                          "end": 11,
                           "loc": {
                             "start": {
                               "line": 2,
@@ -181,8 +184,8 @@
                       },
                       {
                         "type": "ObjectProperty",
-                        "start": 14,
-                        "end": 15,
+                        "start": 13,
+                        "end": 14,
                         "loc": {
                           "start": {
                             "line": 2,
@@ -198,8 +201,8 @@
                         "computed": false,
                         "key": {
                           "type": "Identifier",
-                          "start": 14,
-                          "end": 15,
+                          "start": 13,
+                          "end": 14,
                           "loc": {
                             "start": {
                               "line": 2,
@@ -215,8 +218,8 @@
                         },
                         "value": {
                           "type": "Identifier",
-                          "start": 14,
-                          "end": 15,
+                          "start": 13,
+                          "end": 14,
                           "loc": {
                             "start": {
                               "line": 2,
@@ -238,8 +241,8 @@
                   },
                   "init": {
                     "type": "ObjectExpression",
-                    "start": 19,
-                    "end": 21,
+                    "start": 18,
+                    "end": 20,
                     "loc": {
                       "start": {
                         "line": 2,

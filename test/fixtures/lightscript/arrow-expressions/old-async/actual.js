@@ -1,1 +1,1 @@
-async () => await x
+async ()=> await x

@@ -1,3 +1,3 @@
-var a = async (options = {}) => {
+var a = async (options = {})=> {
   "use strict";
 };

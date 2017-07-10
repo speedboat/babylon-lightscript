@@ -1,2 +1,2 @@
-fn() ->
+fn()->
   "hello world"

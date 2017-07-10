@@ -1,2 +1,2 @@
-a() -/>
+a()-/>
   x: AsyncResult<string> <!- fetch()

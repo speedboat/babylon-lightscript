@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 12,
+  "end": 11,
   "loc": {
     "start": {
       "line": 1,
@@ -9,13 +9,13 @@
     },
     "end": {
       "line": 1,
-      "column": 12
+      "column": 11
     }
   },
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 12,
+    "end": 11,
     "loc": {
       "start": {
         "line": 1,
@@ -23,7 +23,7 @@
       },
       "end": {
         "line": 1,
-        "column": 12
+        "column": 11
       }
     },
     "sourceType": "script",
@@ -31,7 +31,7 @@
       {
         "type": "NamedArrowDeclaration",
         "start": 0,
-        "end": 12,
+        "end": 11,
         "loc": {
           "start": {
             "line": 1,
@@ -39,7 +39,7 @@
           },
           "end": {
             "line": 1,
-            "column": 12
+            "column": 11
           }
         },
         "id": {
@@ -66,59 +66,59 @@
         "skinny": true,
         "body": {
           "type": "BlockStatement",
-          "start": 4,
-          "end": 12,
+          "start": 3,
+          "end": 11,
           "loc": {
             "start": {
               "line": 1,
-              "column": 4
+              "column": 3
             },
             "end": {
               "line": 1,
-              "column": 12
+              "column": 11
             }
           },
           "body": [
             {
               "type": "ExpressionStatement",
-              "start": 8,
-              "end": 12,
+              "start": 7,
+              "end": 11,
               "loc": {
                 "start": {
                   "line": 1,
-                  "column": 8
+                  "column": 7
                 },
                 "end": {
                   "line": 1,
-                  "column": 12
+                  "column": 11
                 }
               },
               "expression": {
                 "type": "AwaitExpression",
-                "start": 8,
-                "end": 12,
+                "start": 7,
+                "end": 11,
                 "loc": {
                   "start": {
                     "line": 1,
-                    "column": 8
+                    "column": 7
                   },
                   "end": {
                     "line": 1,
-                    "column": 12
+                    "column": 11
                   }
                 },
                 "argument": {
                   "type": "Identifier",
-                  "start": 11,
-                  "end": 12,
+                  "start": 10,
+                  "end": 11,
                   "loc": {
                     "start": {
                       "line": 1,
-                      "column": 11
+                      "column": 10
                     },
                     "end": {
                       "line": 1,
-                      "column": 12
+                      "column": 11
                     },
                     "identifierName": "x"
                   },

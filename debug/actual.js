@@ -1,2 +1,4 @@
-class x:
-  some() -> return 12
+try: 
+  s()
+catch:
+  l()

@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 14,
+  "end": 13,
   "loc": {
     "start": {
       "line": 1,
@@ -9,13 +9,13 @@
     },
     "end": {
       "line": 1,
-      "column": 14
+      "column": 13
     }
   },
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 14,
+    "end": 13,
     "loc": {
       "start": {
         "line": 1,
@@ -23,7 +23,7 @@
       },
       "end": {
         "line": 1,
-        "column": 14
+        "column": 13
       }
     },
     "sourceType": "script",
@@ -31,7 +31,7 @@
       {
         "type": "ExpressionStatement",
         "start": 0,
-        "end": 14,
+        "end": 13,
         "loc": {
           "start": {
             "line": 1,
@@ -39,13 +39,13 @@
           },
           "end": {
             "line": 1,
-            "column": 14
+            "column": 13
           }
         },
         "expression": {
           "type": "CallExpression",
           "start": 0,
-          "end": 14,
+          "end": 13,
           "loc": {
             "start": {
               "line": 1,
@@ -53,7 +53,7 @@
             },
             "end": {
               "line": 1,
-              "column": 14
+              "column": 13
             }
           },
           "callee": {
@@ -77,7 +77,7 @@
             {
               "type": "NamedArrowExpression",
               "start": 4,
-              "end": 13,
+              "end": 12,
               "loc": {
                 "start": {
                   "line": 1,
@@ -85,7 +85,7 @@
                 },
                 "end": {
                   "line": 1,
-                  "column": 13
+                  "column": 12
                 }
               },
               "id": {
@@ -112,16 +112,16 @@
               "skinny": true,
               "body": {
                 "type": "Identifier",
-                "start": 12,
-                "end": 13,
+                "start": 11,
+                "end": 12,
                 "loc": {
                   "start": {
                     "line": 1,
-                    "column": 12
+                    "column": 11
                   },
                   "end": {
                     "line": 1,
-                    "column": 13
+                    "column": 12
                   },
                   "identifierName": "x"
                 },

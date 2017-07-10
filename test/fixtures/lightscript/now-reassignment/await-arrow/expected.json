@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 26,
+  "end": 25,
   "loc": {
     "start": {
       "line": 1,
@@ -15,7 +15,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 26,
+    "end": 25,
     "loc": {
       "start": {
         "line": 1,
@@ -31,7 +31,7 @@
       {
         "type": "NamedArrowDeclaration",
         "start": 0,
-        "end": 26,
+        "end": 25,
         "loc": {
           "start": {
             "line": 1,
@@ -66,12 +66,12 @@
         "skinny": true,
         "body": {
           "type": "BlockStatement",
-          "start": 4,
-          "end": 26,
+          "start": 3,
+          "end": 25,
           "loc": {
             "start": {
               "line": 1,
-              "column": 4
+              "column": 3
             },
             "end": {
               "line": 2,
@@ -81,8 +81,8 @@
           "body": [
             {
               "type": "ExpressionStatement",
-              "start": 10,
-              "end": 26,
+              "start": 9,
+              "end": 25,
               "loc": {
                 "start": {
                   "line": 2,
@@ -95,8 +95,8 @@
               },
               "expression": {
                 "type": "AssignmentExpression",
-                "start": 10,
-                "end": 26,
+                "start": 9,
+                "end": 25,
                 "loc": {
                   "start": {
                     "line": 2,
@@ -110,8 +110,8 @@
                 "operator": "<-",
                 "left": {
                   "type": "Identifier",
-                  "start": 14,
-                  "end": 15,
+                  "start": 13,
+                  "end": 14,
                   "loc": {
                     "start": {
                       "line": 2,
@@ -127,8 +127,8 @@
                 },
                 "right": {
                   "type": "AwaitExpression",
-                  "start": 16,
-                  "end": 26,
+                  "start": 15,
+                  "end": 25,
                   "loc": {
                     "start": {
                       "line": 2,
@@ -141,8 +141,8 @@
                   },
                   "argument": {
                     "type": "CallExpression",
-                    "start": 19,
-                    "end": 26,
+                    "start": 18,
+                    "end": 25,
                     "loc": {
                       "start": {
                         "line": 2,
@@ -155,8 +155,8 @@
                     },
                     "callee": {
                       "type": "Identifier",
-                      "start": 19,
-                      "end": 24,
+                      "start": 18,
+                      "end": 23,
                       "loc": {
                         "start": {
                           "line": 2,

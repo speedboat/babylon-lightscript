@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 20,
+  "end": 19,
   "loc": {
     "start": {
       "line": 1,
@@ -15,7 +15,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 20,
+    "end": 19,
     "loc": {
       "start": {
         "line": 1,
@@ -31,7 +31,7 @@
       {
         "type": "NamedArrowDeclaration",
         "start": 0,
-        "end": 20,
+        "end": 19,
         "loc": {
           "start": {
             "line": 1,
@@ -101,12 +101,12 @@
         "skinny": true,
         "body": {
           "type": "BlockStatement",
-          "start": 9,
-          "end": 20,
+          "start": 8,
+          "end": 19,
           "loc": {
             "start": {
               "line": 1,
-              "column": 9
+              "column": 8
             },
             "end": {
               "line": 2,
@@ -116,8 +116,8 @@
           "body": [
             {
               "type": "ExpressionStatement",
-              "start": 14,
-              "end": 20,
+              "start": 13,
+              "end": 19,
               "loc": {
                 "start": {
                   "line": 2,
@@ -130,8 +130,8 @@
               },
               "expression": {
                 "type": "ObjectExpression",
-                "start": 14,
-                "end": 20,
+                "start": 13,
+                "end": 19,
                 "loc": {
                   "start": {
                     "line": 2,
@@ -145,8 +145,8 @@
                 "properties": [
                   {
                     "type": "ObjectProperty",
-                    "start": 15,
-                    "end": 16,
+                    "start": 14,
+                    "end": 15,
                     "loc": {
                       "start": {
                         "line": 2,
@@ -162,8 +162,8 @@
                     "computed": false,
                     "key": {
                       "type": "Identifier",
-                      "start": 15,
-                      "end": 16,
+                      "start": 14,
+                      "end": 15,
                       "loc": {
                         "start": {
                           "line": 2,
@@ -179,8 +179,8 @@
                     },
                     "value": {
                       "type": "Identifier",
-                      "start": 15,
-                      "end": 16,
+                      "start": 14,
+                      "end": 15,
                       "loc": {
                         "start": {
                           "line": 2,
@@ -200,8 +200,8 @@
                   },
                   {
                     "type": "ObjectProperty",
-                    "start": 18,
-                    "end": 19,
+                    "start": 17,
+                    "end": 18,
                     "loc": {
                       "start": {
                         "line": 2,
@@ -217,8 +217,8 @@
                     "computed": false,
                     "key": {
                       "type": "Identifier",
-                      "start": 18,
-                      "end": 19,
+                      "start": 17,
+                      "end": 18,
                       "loc": {
                         "start": {
                           "line": 2,
@@ -234,8 +234,8 @@
                     },
                     "value": {
                       "type": "Identifier",
-                      "start": 18,
-                      "end": 19,
+                      "start": 17,
+                      "end": 18,
                       "loc": {
                         "start": {
                           "line": 2,

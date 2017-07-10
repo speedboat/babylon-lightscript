@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 21,
+  "end": 20,
   "loc": {
     "start": {
       "line": 1,
@@ -15,7 +15,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 21,
+    "end": 20,
     "loc": {
       "start": {
         "line": 1,
@@ -31,7 +31,7 @@
       {
         "type": "NamedArrowDeclaration",
         "start": 0,
-        "end": 21,
+        "end": 20,
         "loc": {
           "start": {
             "line": 1,
@@ -66,12 +66,12 @@
         "skinny": true,
         "body": {
           "type": "BlockStatement",
-          "start": 4,
-          "end": 21,
+          "start": 3,
+          "end": 20,
           "loc": {
             "start": {
               "line": 1,
-              "column": 4
+              "column": 3
             },
             "end": {
               "line": 2,
@@ -81,8 +81,8 @@
           "body": [
             {
               "type": "ExpressionStatement",
-              "start": 10,
-              "end": 21,
+              "start": 9,
+              "end": 20,
               "loc": {
                 "start": {
                   "line": 2,
@@ -95,8 +95,8 @@
               },
               "expression": {
                 "type": "SafeAwaitExpression",
-                "start": 10,
-                "end": 21,
+                "start": 9,
+                "end": 20,
                 "loc": {
                   "start": {
                     "line": 2,
@@ -109,8 +109,8 @@
                 },
                 "argument": {
                   "type": "CallExpression",
-                  "start": 14,
-                  "end": 21,
+                  "start": 13,
+                  "end": 20,
                   "loc": {
                     "start": {
                       "line": 2,
@@ -123,8 +123,8 @@
                   },
                   "callee": {
                     "type": "Identifier",
-                    "start": 14,
-                    "end": 19,
+                    "start": 13,
+                    "end": 18,
                     "loc": {
                       "start": {
                         "line": 2,

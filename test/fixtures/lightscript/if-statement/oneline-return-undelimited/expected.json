@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 41,
+  "end": 40,
   "loc": {
     "start": {
       "line": 1,
@@ -15,7 +15,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 41,
+    "end": 40,
     "loc": {
       "start": {
         "line": 1,
@@ -31,7 +31,7 @@
       {
         "type": "NamedArrowDeclaration",
         "start": 0,
-        "end": 41,
+        "end": 40,
         "loc": {
           "start": {
             "line": 1,
@@ -66,12 +66,12 @@
         "skinny": true,
         "body": {
           "type": "BlockStatement",
-          "start": 4,
-          "end": 41,
+          "start": 3,
+          "end": 40,
           "loc": {
             "start": {
               "line": 1,
-              "column": 4
+              "column": 3
             },
             "end": {
               "line": 2,
@@ -81,8 +81,8 @@
           "body": [
             {
               "type": "IfStatement",
-              "start": 9,
-              "end": 41,
+              "start": 8,
+              "end": 40,
               "loc": {
                 "start": {
                   "line": 2,
@@ -95,8 +95,8 @@
               },
               "test": {
                 "type": "BooleanLiteral",
-                "start": 13,
-                "end": 17,
+                "start": 12,
+                "end": 16,
                 "loc": {
                   "start": {
                     "line": 2,
@@ -111,8 +111,8 @@
               },
               "consequent": {
                 "type": "ReturnStatement",
-                "start": 19,
-                "end": 27,
+                "start": 18,
+                "end": 26,
                 "loc": {
                   "start": {
                     "line": 2,
@@ -125,8 +125,8 @@
                 },
                 "argument": {
                   "type": "NumericLiteral",
-                  "start": 26,
-                  "end": 27,
+                  "start": 25,
+                  "end": 26,
                   "loc": {
                     "start": {
                       "line": 2,
@@ -146,8 +146,8 @@
               },
               "alternate": {
                 "type": "ReturnStatement",
-                "start": 33,
-                "end": 41,
+                "start": 32,
+                "end": 40,
                 "loc": {
                   "start": {
                     "line": 2,
@@ -160,8 +160,8 @@
                 },
                 "argument": {
                   "type": "NumericLiteral",
-                  "start": 40,
-                  "end": 41,
+                  "start": 39,
+                  "end": 40,
                   "loc": {
                     "start": {
                       "line": 2,

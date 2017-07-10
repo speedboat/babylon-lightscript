@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 11,
+  "end": 10,
   "loc": {
     "start": {
       "line": 1,
@@ -9,13 +9,13 @@
     },
     "end": {
       "line": 1,
-      "column": 11
+      "column": 10
     }
   },
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 11,
+    "end": 10,
     "loc": {
       "start": {
         "line": 1,
@@ -23,7 +23,7 @@
       },
       "end": {
         "line": 1,
-        "column": 11
+        "column": 10
       }
     },
     "sourceType": "script",
@@ -31,7 +31,7 @@
       {
         "type": "NamedArrowDeclaration",
         "start": 0,
-        "end": 11,
+        "end": 10,
         "loc": {
           "start": {
             "line": 1,
@@ -39,7 +39,7 @@
           },
           "end": {
             "line": 1,
-            "column": 11
+            "column": 10
           }
         },
         "id": {
@@ -66,16 +66,16 @@
         "skinny": true,
         "body": {
           "type": "ArrowFunctionExpression",
-          "start": 7,
-          "end": 11,
+          "start": 6,
+          "end": 10,
           "loc": {
             "start": {
               "line": 1,
-              "column": 7
+              "column": 6
             },
             "end": {
               "line": 1,
-              "column": 11
+              "column": 10
             }
           },
           "id": null,
@@ -86,16 +86,16 @@
           "skinny": true,
           "body": {
             "type": "Identifier",
-            "start": 10,
-            "end": 11,
+            "start": 9,
+            "end": 10,
             "loc": {
               "start": {
                 "line": 1,
-                "column": 10
+                "column": 9
               },
               "end": {
                 "line": 1,
-                "column": 11
+                "column": 10
               },
               "identifierName": "x"
             },

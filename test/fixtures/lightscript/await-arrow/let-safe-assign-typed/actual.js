@@ -1,2 +1,2 @@
-a() -/>
+a()-/>
   let x: AsyncResult<string> <!- fetch()

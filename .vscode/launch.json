@@ -16,7 +16,10 @@
             "outFiles": [
                 "${workspaceRoot}/lib/**/*.js"
             ],
-            "sourceMaps": true
+            "sourceMaps": true,
+            "env": {
+                "DEBUG": "1"
+            }
         },
          {
             "type": "node",
@@ -27,7 +30,10 @@
             "args": [
                 "./debug"
             ],
-            "sourceMaps": false
+            "sourceMaps": false,
+            "env": {
+                "DEBUG": "1"
+            }
         },
         {
             "type": "node",
@@ -38,7 +44,8 @@
                 "./debug"
             ],
             "env": {
-                "USE_ORIGINAL": "1"
+                "USE_ORIGINAL": "1",
+                "DEBUG": "1"
             },
             "outFiles": [
                 "${workspaceRoot}/lib/**/*.js"
@@ -60,7 +67,8 @@
             "runtimeExecutable": "/usr/local/bin/babel-node",
             "sourceMaps": true,
             "env": {
-                "NODE_ENV": "development"
+                "NODE_ENV": "development",
+                "DEBUG": "1"
             }
         }
     ]

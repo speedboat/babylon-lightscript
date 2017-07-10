@@ -1,1 +1,1 @@
-f() -> for key k in o: k
+f()-> for key k in o: k

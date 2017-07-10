@@ -19,6 +19,8 @@ global.log = console.log.bind(this)
 
 const p = process.argv[2]
 const l = process.argv[3]
+const isModule = process.argv[4]
+
 if (!p) {
   throw new Error("Path argument required")
 }
@@ -49,8 +51,12 @@ if (l) {
 
 const code = fs.readFileSync(actual, 'utf-8');
 let result;
+
+const sourceType = isModule ? "module" : "script";
+
 try {
    result = parser.parse(code.replace(/\n$/g, ""), {
+    sourceType: sourceType,
     plugins: [
       "lightscript",
       "flow",
@@ -59,6 +65,7 @@ try {
       "transform-async-to-generator",
       "transform-class-properties",
       "transform-decorators-legacy"
+      //"asyncGenerators"
     ]
   });
   
@@ -67,6 +74,9 @@ try {
   fs.writeFileSync(exp, JSON.stringify(result, null, 2));
 
 } catch (e) {
+  if (process.env.DEBUG) {
+    throw e;
+  }
   result = {
     throws: e.message
   }

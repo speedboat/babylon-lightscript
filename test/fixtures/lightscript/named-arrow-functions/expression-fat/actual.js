@@ -1,1 +1,1 @@
-foo(fn() => x)
+foo(fn()=> x)

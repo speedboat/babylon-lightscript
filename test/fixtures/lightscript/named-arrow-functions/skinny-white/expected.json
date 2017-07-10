@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 11,
+  "end": 10,
   "loc": {
     "start": {
       "line": 1,
@@ -15,7 +15,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 11,
+    "end": 10,
     "loc": {
       "start": {
         "line": 1,
@@ -31,7 +31,7 @@
       {
         "type": "NamedArrowDeclaration",
         "start": 0,
-        "end": 11,
+        "end": 10,
         "loc": {
           "start": {
             "line": 1,
@@ -66,12 +66,12 @@
         "skinny": true,
         "body": {
           "type": "BlockStatement",
-          "start": 5,
-          "end": 11,
+          "start": 4,
+          "end": 10,
           "loc": {
             "start": {
               "line": 1,
-              "column": 5
+              "column": 4
             },
             "end": {
               "line": 2,
@@ -81,8 +81,8 @@
           "body": [
             {
               "type": "ExpressionStatement",
-              "start": 10,
-              "end": 11,
+              "start": 9,
+              "end": 10,
               "loc": {
                 "start": {
                   "line": 2,
@@ -95,8 +95,8 @@
               },
               "expression": {
                 "type": "Identifier",
-                "start": 10,
-                "end": 11,
+                "start": 9,
+                "end": 10,
                 "loc": {
                   "start": {
                     "line": 2,
