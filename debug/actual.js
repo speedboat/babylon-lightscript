@@ -1,4 +1,1 @@
-try: 
-  s()
-catch:
-  l()
+fn s.t.b

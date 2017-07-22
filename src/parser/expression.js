@@ -372,7 +372,12 @@ pp.seemsLikeFunctionArgument = function() {
       testNode.type === "NumericLiteral" ||
       testNode.type === "ArrayExpression" ||
       testNode.type === "ArrowFunctionExpression" ||
-      testNode.type === "CallExpression"
+      testNode.type === "CallExpression" ||
+      testNode.type === "MemberExpression" ||
+      testNode.type === "LogicalExpression" ||
+      testNode.type === "TemplateLiteral" ||
+      testNode.type === "BinaryExpression" ||
+      testNode.type === "ThisExpression"
     );
   } catch (e) {
     this.state = state;
@@ -395,12 +400,12 @@ pp.seemsLikeFunctionCall = function(base, noCalls) {
     !(
       !this.isNonIndentedBreak()
       && (base.type === "Identifier" || base.type === "MemberExpression" || base.type === "CallExpression")
-      && !reservedWords[6](this.state.value)
-      && !reservedWords.strict(this.state.value)
-      && !reservedWords.strictBind(this.state.value)
-      && otherReservedWords.indexOf(this.state.value) === -1
-      && flowReservedWords.indexOf(this.state.value) === -1    
-      && !this.isKeyword(this.state.value)
+      //&& !reservedWords[6](this.state.value)
+      //&& !reservedWords.strict(this.state.value)
+      //&& !reservedWords.strictBind(this.state.value)
+      //&& otherReservedWords.indexOf(this.state.value) === -1
+      //&& flowReservedWords.indexOf(this.state.value) === -1    
+      //&& !this.isKeyword(this.state.value)
       && !this.state.inDecorator  
       
       //&& !reservedWords[6](base.name)
