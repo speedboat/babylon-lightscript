@@ -484,8 +484,8 @@ pp.parseIfExpression = function (node) {
 
 pp.parseSafeAwait = function (node) {
   if (this.state.currentFunction) {
-    this.state.currentFunction.async = true;
-    this.state.isAsync = true;
+    //this.state.currentFunction.async = true;
+    //this.state.isAsync = true;
   }
 
   if (!this.state.inAsync) this.unexpected();

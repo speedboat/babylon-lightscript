@@ -404,10 +404,10 @@ pp.seemsLikeFunctionCall = function(base, noCalls) {
       //&& !reservedWords.strict(this.state.value)
       //&& !reservedWords.strictBind(this.state.value)
       //&& otherReservedWords.indexOf(this.state.value) === -1
-      //&& flowReservedWords.indexOf(this.state.value) === -1    
+      //&& flowReservedWords.indexOf(this.state.value) === -1
       //&& !this.isKeyword(this.state.value)
-      && !this.state.inDecorator  
-      
+      && !this.state.inDecorator
+
       //&& !reservedWords[6](base.name)
       //&& !reservedWords.strict(base.name)
       //&& !reservedWords.strictBind(base.name)
@@ -426,7 +426,7 @@ pp.seemsLikeFunctionCall = function(base, noCalls) {
     return false;
   }
   */
-  
+
   const isArgument = this.seemsLikeFunctionArgument();
   this.state = state;
   return isArgument;
@@ -687,7 +687,7 @@ pp.parseNoCallExpr = function () {
 // or `{}`.
 
 pp.parseExprAtom = function (refShorthandDefaultPos) {
-  
+
   const canBeArrow = this.state.potentialArrowAt === this.state.start;
   let node;
 
@@ -748,7 +748,7 @@ pp.parseExprAtom = function (refShorthandDefaultPos) {
       if (canBeArrow && !this.canInsertSemicolon() && this.match(tt.arrow)) {
         if (this.hasPlugin("lightscript")) {
           if (!this.hasSpaceBetweenTokens()) {
-            return this.parseArrowExpression(node, [id]); 
+            return this.parseArrowExpression(node, [id]);
           }
         } else {
           return this.parseArrowExpression(node, [id]);
@@ -1491,8 +1491,8 @@ pp.checkReservedWord = function (word, startLoc, checkKeywords, isBinding) {
 
 pp.parseAwait = function (node) {
   if (this.hasPlugin("lightscript") && this.state.currentFunction) {
-    this.state.currentFunction.async = true;
-    this.state.isAsync = true;
+  //  this.state.currentFunction.async = true;
+  //  this.state.isAsync = true;
   }
   // istanbul ignore next: this condition is checked at the call site so won't be hit here
   if (!this.state.inAsync && !this.hasPlugin("lightscript")) {
